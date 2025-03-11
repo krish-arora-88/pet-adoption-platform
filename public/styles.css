@@ -30,6 +30,10 @@ a:hover {
     text-decoration: underline;
 }
 
+.site-logo {
+    width: 100px;
+}
+
 /* Form Styling */
 form#new_pet {
     margin: 20px 0;
