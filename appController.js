@@ -9,7 +9,7 @@ const router = express.Router();
 router.get('/check-db-connection', async (req, res) => {
     const isConnect = await appService.testOracleConnection();
     if (isConnect) {
-        res.send('connected');
+        res.send('Connected');
     } else {
         res.send('unable to connect');
     }
@@ -17,7 +17,7 @@ router.get('/check-db-connection', async (req, res) => {
 
 router.get('/demotable', async (req, res) => {
     const tableContent = await appService.fetchDemotableFromDb();
-    res.json({data: tableContent});
+    res.json({ data: tableContent });
 });
 
 router.post("/initiate-demotable", async (req, res) => {
@@ -52,13 +52,13 @@ router.post("/update-name-demotable", async (req, res) => {
 router.get('/count-demotable', async (req, res) => {
     const tableCount = await appService.countDemotable();
     if (tableCount >= 0) {
-        res.json({ 
-            success: true,  
+        res.json({
+            success: true,
             count: tableCount
         });
     } else {
-        res.status(500).json({ 
-            success: false, 
+        res.status(500).json({
+            success: false,
             count: tableCount
         });
     }
