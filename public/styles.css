@@ -34,6 +34,10 @@ a:hover {
     width: 100px;
 }
 
+.loading {
+    width: 50px;
+}
+
 /* Form Styling */
 form#new_pet {
     margin: 20px 0;
