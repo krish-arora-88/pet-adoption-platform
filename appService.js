@@ -119,6 +119,20 @@ async function insertDemotable(id, name) {
     });
 }
 
+async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `INSERT INTO DEMOTABLE (MicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender)`,
+            [MicrochipID, Name, Age, Breed, Gender],
+            { autoCommit: true }
+        );
+
+        return result.rowsAffected && result.rowsAffected > 0;
+    }).catch(() => {
+        return false;
+    });
+}
+
 async function updateNameDemotable(oldName, newName) {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
@@ -148,5 +162,6 @@ module.exports = {
     initiateDemotable, 
     insertDemotable, 
     updateNameDemotable, 
-    countDemotable
+    countDemotable,
+    insertNewPet
 };

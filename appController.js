@@ -29,9 +29,9 @@ router.post("/initiate-demotable", async (req, res) => {
     }
 });
 
-router.post("/insert-demotable", async (req, res) => {
-    const { id, name } = req.body;
-    const insertResult = await appService.insertDemotable(id, name);
+router.post("/insert-new-pet", async (req, res) => {
+    const { MicrochipID, Name, Age, Breed, Gender } = req.body;
+    const insertResult = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender);
     if (insertResult) {
         res.json({ success: true });
     } else {
