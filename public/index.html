@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Adoption Platform</title>
-    <link rel = "scripts" href = "scripts.js"/>
-    
+    <link rel="scripts" href="scripts.js" />
+    <link rel="stylesheet" href="styles.css">
 </head>
+
 <body>
     <h1>Database Connection Status: 
         <!-- An in-line placeholder to display connection status. -->
@@ -22,21 +24,21 @@
     <p><a href="/users/create">Sign up</a></p>
     <p><a href="/adoptions">Manage your Adoptions</a></p>
     <p><a href="/adoptions/create">Adopt a Pet</a></p>
-</br>
+    </br>
     <h1>Protect BC Pets!</h1>
-    
 
-    <form id = "new_pet">
-        <input id = "MicrochipID" placeholder = "MicrochipID"></input>
-        <input id = "petName" placeholder = "Name"></input>
-        <input id = "petAge" placeholder = "Age"></input>
-        <input id = "breed" placeholder="Breed"></input>
-        <input id = "gender" placeholder = "Gender"></input>
 
-        <button type = "submit">Register Dog</button>
+    <form id="new_pet">
+        <input id="MicrochipID" placeholder="MicrochipID"></input>
+        <input id="petName" placeholder="Name"></input>
+        <input id="petAge" placeholder="Age"></input>
+        <input id="breed" placeholder="Breed"></input>
+        <input id="gender" placeholder="Gender"></input>
+
+        <button type="submit">Register Dog</button>
     </form>
 
-    <div id = "new_pet_message"></div>
+    <div id="new_pet_message"></div>
 
     <h2>Show Pets</h2>
     <table id="pet_table" border="1">
@@ -54,4 +56,5 @@
         </tbody>
     </table>
 </body>
+
 </html>
