@@ -30,6 +30,32 @@ a:hover {
     text-decoration: underline;
 }
 
+.site-logo {
+    width: 100px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.loading {
+    width: 50px;
+}
+
+.db-connection {
+    margin-top: 20px;
+    padding: 10px;
+    background-color: #f2dede;
+    border: 1px solid #ebccd1;
+    border-radius: 5px;
+    color: #a94442;
+    margin: 0;
+    padding-right: 10px;
+}
+
 /* Form Styling */
 form#new_pet {
     margin: 20px 0;
