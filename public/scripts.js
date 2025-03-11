@@ -2,7 +2,6 @@ window.onload = function() {
     checkDbConnection();
     fetchTableData();
     document.getElementById("new_pet").addEventListener("submit", insertNewPet);
-
 }
 
 async function insertNewPet(event) {
