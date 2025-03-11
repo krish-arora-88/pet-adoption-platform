@@ -1,0 +1,91 @@
+/* styles.css */
+
+/* Global Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f7f7f7;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+}
+
+h1,
+h2 {
+    color: #2a7f62;
+}
+
+p {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+/* Link Styling */
+a {
+    text-decoration: none;
+    color: #2a7f62;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* Form Styling */
+form#new_pet {
+    margin: 20px 0;
+    background-color: #fff;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-width: 400px;
+}
+
+form#new_pet input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+    box-sizing: border-box;
+}
+
+form#new_pet button {
+    background-color: #2a7f62;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+form#new_pet button:hover {
+    background-color: #24684b;
+}
+
+/* Table Styling */
+table#pet_table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table#pet_table th,
+table#pet_table td {
+    padding: 10px;
+    text-align: left;
+}
+
+table#pet_table th {
+    background-color: #2a7f62;
+    color: #fff;
+}
+
+table#pet_table tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+/* Message Box */
+div#new_pet_message {
+    margin-top: 10px;
+    font-style: italic;
+}
