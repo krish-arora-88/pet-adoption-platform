@@ -2,6 +2,7 @@ window.onload = function() {
     checkDbConnection();
     fetchTableData();
     document.getElementById("new_pet").addEventListener("submit", insertNewPet);
+    document.getElementById("resetPetTable").addEventListener("click", resetPetTable);
 }
 
 async function insertNewPet(event) {
@@ -46,7 +47,7 @@ function fetchTableData() {
 
 // Fetches data from the demotable and displays it.
 async function fetchAndDisplayUsers() {
-    const tableElement = document.getElementById('new_pet');
+    const tableElement = document.getElementById('pet_table');
     const tableBody = tableElement.querySelector('tbody');
 
     const response = await fetch('/pet-table', {
@@ -69,6 +70,23 @@ async function fetchAndDisplayUsers() {
         });
     });
 }
+
+// This function resets or initializes the demotable.
+async function resetPetTable() {
+    const response = await fetch("/initiateNewPet", {
+        method: 'POST'
+    });
+    const responseData = await response.json();
+
+    if (responseData.success) {
+        const messageElement = document.getElementById('resetResultMsg');
+        messageElement.textContent = "demotable initiated successfully!";
+        fetchTableData();
+    } else {
+        alert("Error initiating table!");
+    }
+}
+
 // This function checks the database connection and updates its status on the frontend.
 async function checkDbConnection() {
     const statusElem = document.getElementById('dbStatus');

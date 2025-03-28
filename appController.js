@@ -15,13 +15,22 @@ router.get('/check-db-connection', async (req, res) => {
     }
 });
 
-router.get('/demotable', async (req, res) => {
-    const tableContent = await appService.fetchDemotableFromDb();
-    res.json({ data: tableContent });
+router.get('/pet-table', async (req, res) => {
+    const tableContent = await appService.fetchPetTableFromDb();
+    res.json({data: tableContent});
 });
 
 router.post("/initiate-demotable", async (req, res) => {
     const initiateResult = await appService.initiateDemotable();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/initiateNewPet", async (req, res) => {
+    const initiateResult = await appService.initiateNewPet();
     if (initiateResult) {
         res.json({ success: true });
     } else {

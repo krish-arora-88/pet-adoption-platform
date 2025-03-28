@@ -76,44 +76,33 @@ async function testOracleConnection() {
     });
 }
 
-async function fetchDemotableFromDb() {
+async function fetchPetTableFromDb() {
     return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM DEMOTABLE');
+        const result = await connection.execute('SELECT * FROM Pet');
         return result.rows;
     }).catch(() => {
         return [];
     });
 }
 
-async function initiateDemotable() {
+async function initiateNewPet() {
     return await withOracleDB(async (connection) => {
         try {
-            await connection.execute(`DROP TABLE DEMOTABLE`);
+            await connection.execute(`DROP TABLE Pet`);
         } catch(err) {
             console.log('Table might not exist, proceeding to create...');
         }
 
         const result = await connection.execute(`
-            CREATE TABLE DEMOTABLE (
-                id NUMBER PRIMARY KEY,
-                name VARCHAR2(20)
-            )
+            CREATE TABLE Pet (
+                PetMicrochipID NUMBER(15) PRIMARY KEY,
+                Name VARCHAR2(50),
+                Age NUMBER(3),
+                Breed VARCHAR2(50) NOT NULL,
+                Gender CHAR(1) NOT NULL
+                )
         `);
         return true;
-    }).catch(() => {
-        return false;
-    });
-}
-
-async function insertDemotable(id, name) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO DEMOTABLE (id, name) VALUES (:id, :name)`,
-            [id, name],
-            { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0;
     }).catch(() => {
         return false;
     });
@@ -122,7 +111,7 @@ async function insertDemotable(id, name) {
 async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
-            `INSERT INTO DEMOTABLE (MicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender)`,
+            `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender)`,
             [MicrochipID, Name, Age, Breed, Gender],
             { autoCommit: true }
         );
@@ -133,35 +122,13 @@ async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
     });
 }
 
-async function updateNameDemotable(oldName, newName) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `UPDATE DEMOTABLE SET name=:newName where name=:oldName`,
-            [newName, oldName],
-            { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
-        return false;
-    });
-}
-
-async function countDemotable() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT Count(*) FROM DEMOTABLE');
-        return result.rows[0][0];
-    }).catch(() => {
-        return -1;
-    });
-}
-
 module.exports = {
     testOracleConnection,
-    fetchDemotableFromDb,
-    initiateDemotable, 
-    insertDemotable, 
-    updateNameDemotable, 
-    countDemotable,
-    insertNewPet
+    // initiateDemotable, 
+    // insertDemotable, 
+    // updateNameDemotable, 
+    // countDemotable,
+    insertNewPet,
+    fetchPetTableFromDb,
+    initiateNewPet
 };
