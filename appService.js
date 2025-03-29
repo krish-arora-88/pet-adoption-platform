@@ -93,7 +93,7 @@ async function initiateNewPet() {
     return await withOracleDB(async (connection) => {
         try {
             await connection.execute(`DROP TABLE Pet`);
-        } catch(err) {
+        } catch (err) {
             console.log('Table might not exist, proceeding to create...');
         }
 
@@ -133,7 +133,7 @@ async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
 
 async function fetchClientTableFromDb() {
     return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM Client');
+        const result = await connection.execute('SELECT * FROM "Client"');
         return result.rows;
     }).catch(() => {
         return [];
@@ -144,18 +144,19 @@ async function initiateNewClient() {
     return await withOracleDB(async (connection) => {
         try {
             await connection.execute(`DROP TABLE Client`);
-        } catch(err) {
+        } catch (err) {
             console.log('Table might not exist, proceeding to create...');
         }
 
         const result = await connection.execute(`
             CREATE TABLE Client (
-                ClientID NUMBER(10) PRIMARY KEY AUTO_INCREMENT,
+                ClientID NUMBER(10) PRIMARY KEY,
                 FirstName VARCHAR2(100) NOT NULL,
                 LastName VARCHAR2(100),
                 ClientAddress VARCHAR2(100) NOT NULL,
                 ClientContact NUMBER(20)
                 )
+            
         `);
         return true;
     }).catch(() => {
@@ -181,7 +182,7 @@ async function insertNewClient(FirstName, LastName, ClientAddress, ClientContact
             [id, FirstName, LastName, ClientAddress, ClientContact],
             { autoCommit: true }
         );
-        
+
         return result.rowsAffected && result.rowsAffected > 0 ? id : false;
     }).catch(() => {
         return false;

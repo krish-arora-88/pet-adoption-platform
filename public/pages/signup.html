@@ -1,68 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../scripts/scripts.js"></script>
+    <script src="../scripts/signup.js"></script>
     <link rel="stylesheet" href="../styles/styles.css">
     <title>Sign Up</title>
 </head>
+
 <body>
 
-<!-- ======================================================================
+    <!-- ======================================================================
 // =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
 // LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
 // ====================================================================== -->
-    <div class = "responsibility"><h1>Sign Up</h1>
-    <form id="sign_up">
-        <input id="ClientFirstName" placeholder="First Name" maxlength="100"></input>
-        <input id="ClientLastName" placeholder="Last Name" maxlength="100"></input>
-        <input id="ClientAddress" placeholder="Address" maxlength="100"></input>
-        <input id="ClientContact" placeholder="Phone Number" maxlength="20"></input>
-        <select id="ClientType">
-            <option value='Donor'>Donor</option>
-            <option value='Owner'>Adopter</option>
-          </select>
+    <div class="responsibility">
+        <h1>Sign Up</h1>
+        <form id="sign_up">
+            <input id="ClientFirstName" placeholder="First Name" maxlength="100"></input>
+            <input id="ClientLastName" placeholder="Last Name" maxlength="100"></input>
+            <input id="ClientAddress" placeholder="Address" maxlength="100"></input>
+            <input id="ClientContact" placeholder="Phone Number" maxlength="20"></input>
+            <select id="ClientType">
+                <option value='Donor'>Donor</option>
+                <option value='Owner'>Adopter</option>
+            </select>
 
-        <button type="submit">Create Account </button>
+            <button type="submit">Create Account </button>
 
-    </form>
-    <br>
+        </form>
+        <br>
 
-    <p id = "sign_up_status"></p>
-</div>
+        <p id="sign_up_status"></p>
+    </div>
 
-<div class = "responsibility">
-    <h1>Update Information</h1>
-    <form id="Client_Update">
-        <input id = "ClientNumber" placeholder="Account ID" maxlength="10"></input>
-        <!-- <input id="ClientFirstName" placeholder="First Name" maxlength="100"></input>
+    <div class="responsibility">
+        <h1>Update Information</h1>
+        <form id="client_update">
+            <input id="ClientNumber" placeholder="Account ID" maxlength="10"></input>
+            <!-- <input id="ClientFirstName" placeholder="First Name" maxlength="100"></input>
         <input id="ClientLastName" placeholder="Last Name" maxlength="100"></input>
         <input id="ClientAddress" placeholder="Address" maxlength="100"></input>
         <input id="ClientContact" placeholder="Phone Number" maxlength="30"></input> -->
 
-        <button type="submit">View Account </button>
+            <button type="submit">View Account </button>
 
-    </form>
+        </form>
+        <br>
+
+    </div>
     <br>
+    <table id="client_table" border="1">
+        <thead>
+            <tr>
 
-</div>
-<br>
-<table id="client_table" border="1">
-    <!-- <thead>
-        <tr>
-            
-            Table head, need to be adjusted accordingly to align with your own.
-            <th>ID</th>
-            <th>First Name</th>
-            <th>Last Name</th>
-            <th>Address</th>
-            <th>Phone Number</th>
-        </tr>
-    </thead> -->
-    <!-- <tbody>
-    </tbody> -->
-</table>
-    
+                <!-- Table head, need to be adjusted accordingly to align with your own. -->
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Address</th>
+                <th>Phone Number</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <br>
+    <button id = "resetClient"> Reset Client</button>
+    <p id = "resetResultMsg"></p>
 </body>
+
 </html>

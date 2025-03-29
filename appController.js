@@ -50,8 +50,13 @@ router.post("/insert-new-pet", async (req, res) => {
 // LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
 // ======================================================================
 
+router.get('/client-table', async (req, res) => {
+    const tableContent = await appService.fetchClientTableFromDb();
+    res.json({data: tableContent});
+});
+
 router.post("/initiateNewClient", async (req, res) => {
-    const initiateResult = await appService.initiateNewPet();
+    const initiateResult = await appService.initiateNewClient();
     if (initiateResult) {
         res.json({ success: true });
     } else {
