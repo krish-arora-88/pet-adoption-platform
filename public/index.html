@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Adoption Platform</title>
-    <script src="scripts.js"></script>
-    <link rel="stylesheet" href="styles.css">
+    <script src="scripts/scripts.js"></script>
+    <link rel="stylesheet" href="styles/styles.css">
     <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
 </head>
 
@@ -22,16 +22,34 @@
                 alt="Loading...">
         </h1>
     </div>
-    <h1>Welcome to the Pet Adoption Platform</h1>
-    <p><a href="pets.html">Available Pets</a></p>
-    <p><a href="registerpet.html">Register your Pet</a></p>
-    <p><a href="adoptioncentres.html">View Adoption Centres</a></p>
-    <p><a href="/users/create">Sign up</a></p>
-    <p><a href="adoptions.html">Manage your Adoptions</a></p>
-    <p><a href="/adoptions/create">Adopt a Pet</a></p>
-    </br>
+    <h1>Welcome to the BC Pet Adoption Platform!</h1>
+    <div id="menu_options">
+        <div class="responsibility">
+            <h2>For Pet Owners: </h2>
+            <p><a href="pages/signup.html">Sign up or Manage Account</a></p>
+            <p><a href="pages/pets.html">Available Pets</a></p>
+            <p><a href="pages/managePets.html">Manage Pets</a></p>
+            <p><a href="pages/adoptioncentres.html">View Adoption Centres</a></p>
+            <p><a href="pages/Veterenarians.html">View Available Vets</a></p>
+            <p><a href="pages/adoptions.html">Manage your Adoptions</a></p>
+            </br>
+        </div>
+        <div class="responsibility">
+            <h2>For Adoption Center Management:</h2>
+            <p><a href = "pages/CenterPet.html">Manage Pet Care</a></p>
+            <p><a href = "pages/CenterEmployees.html">Manage Employees</a></p>
+        </br>
+        </div>
 
-    <h2>Show Pets</h2>
+        <div class="responsibility">
+            <h2>For Veterenarians</h2>
+            <p><a href="pages/VetPractice.html">Manage Practice</a></p>
+            <p><a href="pages/VetMedicalRecord.html">Manage Medical Records</a></p>
+        </br>
+        </div>
+
+    </div>
+    <h2>Adopt a Pet!</h2>
     <table id="pet_table" border="1">
         <thead>
             <tr>
@@ -46,6 +64,10 @@
         <tbody>
         </tbody>
     </table>
+
+    <br>
+    <button id = "see_pets">See pets</button>
+
 </body>
 
 </html>

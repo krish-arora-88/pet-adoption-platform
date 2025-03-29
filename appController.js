@@ -15,19 +15,16 @@ router.get('/check-db-connection', async (req, res) => {
     }
 });
 
+// ======================================================================
+// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
+// ======================================================================
+
 router.get('/pet-table', async (req, res) => {
     const tableContent = await appService.fetchPetTableFromDb();
     res.json({data: tableContent});
 });
 
-router.post("/initiate-demotable", async (req, res) => {
-    const initiateResult = await appService.initiateDemotable();
-    if (initiateResult) {
-        res.json({ success: true });
-    } else {
-        res.status(500).json({ success: false });
-    }
-});
+
 
 router.post("/initiateNewPet", async (req, res) => {
     const initiateResult = await appService.initiateNewPet();
@@ -48,6 +45,39 @@ router.post("/insert-new-pet", async (req, res) => {
     }
 });
 
+// ======================================================================
+// =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
+// LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
+// ======================================================================
+
+router.post("/initiateNewClient", async (req, res) => {
+    const initiateResult = await appService.initiateNewPet();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/insert-new-client", async (req, res) => {
+    const {FirstName, LastName, ClientAddress, ClientContact} = req.body;
+    const insertResult = await appService.insertNewClient(FirstName, LastName, ClientAddress, ClientContact);
+    if (insertResult !== false) {
+        res.json({ 
+            success: true,
+            clientID: insertResult
+        });
+    } else {
+        res.status(500).json({ 
+            success: false,
+            message: "Failed to create account" 
+        });
+    }
+});
+
+
+
+// Demotable, not used in app but here for reference
 router.post("/update-name-demotable", async (req, res) => {
     const { oldName, newName } = req.body;
     const updateResult = await appService.updateNameDemotable(oldName, newName);
@@ -70,6 +100,15 @@ router.get('/count-demotable', async (req, res) => {
             success: false,
             count: tableCount
         });
+    }
+});
+
+router.post("/initiate-demotable", async (req, res) => {
+    const initiateResult = await appService.initiateDemotable();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
     }
 });
 

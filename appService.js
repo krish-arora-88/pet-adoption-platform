@@ -76,6 +76,10 @@ async function testOracleConnection() {
     });
 }
 
+// ======================================================================
+// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
+// ======================================================================
+
 async function fetchPetTableFromDb() {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute('SELECT * FROM Pet');
@@ -122,6 +126,70 @@ async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
     });
 }
 
+// ======================================================================
+// =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
+// LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
+// ======================================================================
+
+async function fetchClientTableFromDb() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute('SELECT * FROM Client');
+        return result.rows;
+    }).catch(() => {
+        return [];
+    });
+}
+
+async function initiateNewClient() {
+    return await withOracleDB(async (connection) => {
+        try {
+            await connection.execute(`DROP TABLE Client`);
+        } catch(err) {
+            console.log('Table might not exist, proceeding to create...');
+        }
+
+        const result = await connection.execute(`
+            CREATE TABLE Client (
+                ClientID NUMBER(10) PRIMARY KEY AUTO_INCREMENT,
+                FirstName VARCHAR2(100) NOT NULL,
+                LastName VARCHAR2(100),
+                ClientAddress VARCHAR2(100) NOT NULL,
+                ClientContact NUMBER(20)
+                )
+        `);
+        return true;
+    }).catch(() => {
+        return false;
+    });
+}
+
+async function insertNewClient(FirstName, LastName, ClientAddress, ClientContact) {
+
+    return await withOracleDB(async (connection) => {
+
+        // generates a number for you, increments it as you add a new one
+        let id = await connection.execute(
+            `SELECT NVL(MAX(ClientID), 0) + 1 AS NextID FROM Client`
+        );
+        id = id.rows[0][0];
+
+        console.log(id);
+
+        const result = await connection.execute(
+            `INSERT INTO Client (ClientID, FirstName, LastName, ClientAddress, ClientContact) 
+            VALUES (:id, :FirstName, :LastName, :ClientAddress, :ClientContact)`,
+            [id, FirstName, LastName, ClientAddress, ClientContact],
+            { autoCommit: true }
+        );
+        
+        return result.rowsAffected && result.rowsAffected > 0 ? id : false;
+    }).catch(() => {
+        return false;
+    });
+}
+
+
+
 module.exports = {
     testOracleConnection,
     // initiateDemotable, 
@@ -130,5 +198,8 @@ module.exports = {
     // countDemotable,
     insertNewPet,
     fetchPetTableFromDb,
-    initiateNewPet
+    initiateNewPet,
+    insertNewClient,
+    initiateNewClient,
+    fetchClientTableFromDb
 };
