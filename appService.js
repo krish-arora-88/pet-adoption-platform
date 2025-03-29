@@ -133,7 +133,7 @@ async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
 
 async function fetchClientTableFromDb() {
     return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM "Client"');
+        const result = await connection.execute('SELECT * FROM Client');
         return result.rows;
     }).catch(() => {
         return [];

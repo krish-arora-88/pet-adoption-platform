@@ -42,6 +42,7 @@ async function insertNewClient(event) {
     } else {
         messageElement.textContent = "An error occured";
     }
+    fetchClientTableData();
 }
 
 function fetchClientTableData() {
