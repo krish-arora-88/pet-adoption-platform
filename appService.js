@@ -189,7 +189,23 @@ async function insertNewClient(FirstName, LastName, ClientAddress, ClientContact
     });
 }
 
-
+async function updateClient(clientId, FirstName, LastName, ClientAddress, ClientContact) {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `UPDATE Client
+             SET FirstName = :FirstName,
+                 LastName = :LastName,
+                 ClientAddress = :ClientAddress,
+                 ClientContact = :ClientContact
+             WHERE ClientID = :clientId`,
+            [FirstName, LastName, ClientAddress, ClientContact, clientId],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
+    }).catch(() => {
+        return false;
+    });
+}
 
 module.exports = {
     testOracleConnection,
@@ -202,5 +218,6 @@ module.exports = {
     initiateNewPet,
     insertNewClient,
     initiateNewClient,
+    updateClient,
     fetchClientTableFromDb
 };
