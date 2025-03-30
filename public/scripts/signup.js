@@ -19,6 +19,8 @@ async function insertNewClient(event) {
     const ClientAddress = document.getElementById("ClientAddress").value;
     const ClientContact = document.getElementById("ClientContact").value;
 
+    document.getElementById("sign_up").reset();
+
     const response = await fetch('/insert-new-client', {
         method: 'POST',
         headers: {
