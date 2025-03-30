@@ -4,13 +4,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
     <script src="../scripts/signup.js"></script>
     <link rel="stylesheet" href="../styles/styles.css">
-    <title>Sign Up</title>
+    <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
 </head>
 
 <body>
-
+    <a href="/">
+        <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
+    </a>
     <!-- ======================================================================
 // =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
 // LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
@@ -51,7 +54,7 @@
 
     </div>
     <br>
-    <table id="client_table" border="1">
+    <table id="client_table" class="tables-style" border="1">
         <thead>
             <tr>
 
@@ -68,8 +71,9 @@
     </table>
 
     <br>
-    <button id = "resetClient"> Reset Client</button>
-    <p id = "resetResultMsg"></p>
+    <button id="resetClient">Reset Client</button>
+    <p id="resetResultMsg"></p>
+    <p><a href="./">Return Home</a></p>
 </body>
 
 </html>
