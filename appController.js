@@ -21,7 +21,7 @@ router.get('/check-db-connection', async (req, res) => {
 
 router.get('/pet-table', async (req, res) => {
     const tableContent = await appService.fetchPetTableFromDb();
-    res.json({data: tableContent});
+    res.json({ data: tableContent });
 });
 
 
@@ -52,7 +52,7 @@ router.post("/insert-new-pet", async (req, res) => {
 
 router.get('/client-table', async (req, res) => {
     const tableContent = await appService.fetchClientTableFromDb();
-    res.json({data: tableContent});
+    res.json({ data: tableContent });
 });
 
 router.post("/initiateNewClient", async (req, res) => {
@@ -65,22 +65,30 @@ router.post("/initiateNewClient", async (req, res) => {
 });
 
 router.post("/insert-new-client", async (req, res) => {
-    const {FirstName, LastName, ClientAddress, ClientContact} = req.body;
+    const { FirstName, LastName, ClientAddress, ClientContact } = req.body;
     const insertResult = await appService.insertNewClient(FirstName, LastName, ClientAddress, ClientContact);
     if (insertResult !== false) {
-        res.json({ 
+        res.json({
             success: true,
             clientID: insertResult
         });
     } else {
-        res.status(500).json({ 
+        res.status(500).json({
             success: false,
-            message: "Failed to create account" 
+            message: "Failed to create account"
         });
     }
 });
 
-
+router.post("/update-client", async (req, res) => {
+    const { clientId, FirstName, LastName, ClientAddress, ClientContact } = req.body;
+    const updateResult = await appService.updateClient(clientId, FirstName, LastName, ClientAddress, ClientContact);
+    if (updateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
 
 // Demotable, not used in app but here for reference
 router.post("/update-name-demotable", async (req, res) => {
