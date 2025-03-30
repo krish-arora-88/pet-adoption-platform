@@ -24,6 +24,9 @@ app.use(express.json());             // Parse incoming JSON payloads
 // mount the router
 app.use('/', appController);
 
+app.get('/pages', (req, res) => {
+    res.redirect('/');
+});
 
 // ----------------------------------------------------------
 // Starting the server

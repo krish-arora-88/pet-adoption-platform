@@ -1,12 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Employee Management</title>
   <link rel="stylesheet" href="../styles/styles.css" />
   <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
+  <style>
+    /* Remove spinner arrows for number inputs */
+    /* Chrome, Safari, Edge, Opera */
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    /* Firefox */
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('employeeForm');
@@ -14,11 +26,13 @@
 
       form.addEventListener('submit', (e) => {
         e.preventDefault();
+        // Get input values
         const firstName = document.getElementById('firstName').value;
         const lastName = document.getElementById('lastName').value;
         const role = document.getElementById('role').value;
         const salary = document.getElementById('salary').value;
         
+        // Create a new table row with the employee info
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${firstName}</td>
@@ -33,8 +47,34 @@
     });
   </script>
 </head>
-
 <body>
-    
+  <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" />
+  <h1>Employee Management</h1>
+  
+  <!-- Employee Form -->
+  <form id="employeeForm">
+    <input type="text" id="firstName" placeholder="First Name" required>
+    <input type="text" id="lastName" placeholder="Last Name" required>
+    <input type="text" id="role" placeholder="Role" required>
+    <input type="number" id="salary" placeholder="Salary" step="0.01" required>
+    <button type="submit">Add Employee</button>
+  </form>
+  
+  <table id="employeeTable" border="1">
+    <thead>
+      <tr>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Role</th>
+        <th>Salary</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="employeeTableBody">
+
+    </tbody>
+  </table>
+  
+  <p><a href="./index.html">Return Home</a></p>
 </body>
 </html>

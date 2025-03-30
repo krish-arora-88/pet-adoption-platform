@@ -1,33 +1,48 @@
 window.onload = function () {
-    checkDbConnection();
-    document.getElementById("new_pet").addEventListener("submit", insertNewPet);
-    document.getElementById("resetPetTable").addEventListener("click", resetPetTable);
-    document.getElementById("see_pets").addEventListener("click", fetchPetTableData);
-    fetchPetTableData();
-}
+    // Pet Management
+    if (document.getElementById("dbStatus")) {
+        checkDbConnection();
+    }
+    if (document.getElementById("new_pet")) {
+        document.getElementById("new_pet").addEventListener("submit", insertNewPet);
+    }
+    if (document.getElementById("resetPetTable")) {
+        document.getElementById("resetPetTable").addEventListener("click", resetPetTable);
+    }
+    if (document.getElementById("see_pets")) {
+        document.getElementById("see_pets").addEventListener("click", fetchPetTableData);
+        fetchPetTableData();
+    }
 
-// This function checks the database connection and updates its status on the frontend.
+    // Client Sign Up
+    if (document.getElementById("sign_up")) {
+        document.getElementById("sign_up").addEventListener("submit", insertNewClient);
+    }
+    if (document.getElementById("resetClient")) {
+        document.getElementById("resetClient").addEventListener("click", resetClient);
+    }
+    if (document.getElementById("client_table")) {
+        fetchAndDisplayClientTable();
+    }
+};
+
 async function checkDbConnection() {
-    const statusElem = document.getElementById('dbStatus'); // I THINK THIS STUFF IS THE ISSUE
+    const statusElem = document.getElementById('dbStatus');
     const loadingGifElem = document.getElementById('loadingGif');
 
-    const response = await fetch('/check-db-connection', {
-        method: "GET"
-    });
+    try {
+        const response = await fetch('/check-db-connection', { method: "GET" });
+        // Hide the loading GIF once the response is received.
+        if (loadingGifElem) loadingGifElem.style.display = 'none';
+        if (statusElem) statusElem.style.display = 'inline';
 
-    // Hide the loading GIF once the response is received.
-    loadingGifElem.style.display = 'none';
-    // Display the statusElem's text in the placeholder.
-    statusElem.style.display = 'inline';
-
-    response.text()
-        .then((text) => {
-            statusElem.textContent = text;
-        })
-        .catch((error) => {
-            statusElem.textContent = 'connection timed out';  // Adjust error handling if required.
-        });
+        const text = await response.text();
+        statusElem.textContent = text;
+    } catch (error) {
+        if (statusElem) statusElem.textContent = 'connection timed out';
+    }
 }
+
 // ======================================================================
 // =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
 // ======================================================================
@@ -41,13 +56,9 @@ async function insertNewPet(event) {
     const breed = document.getElementById("breed").value;
     const gender = document.getElementById("gender").value;
 
-
     const response = await fetch('/insert-new-pet', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             MicrochipID: microchip,
             Name: petname,
@@ -58,59 +69,144 @@ async function insertNewPet(event) {
     });
 
     const responseData = await response.json();
-
     const messageElement = document.getElementById("new_pet_message");
+
     if (responseData.success) {
-        messageElement.textContent = "Success!";
+        if (messageElement) messageElement.textContent = "Success!";
         fetchPetTableData();
     } else {
-        messageElement.textContent = "An error occured";
+        if (messageElement) messageElement.textContent = "An error occurred";
     }
 }
-
 
 function fetchPetTableData() {
     fetchAndDisplayPetTable();
 }
 
-// Fetches data from the demotable and displays it.
 async function fetchAndDisplayPetTable() {
     const tableElement = document.getElementById('pet_table');
+    if (!tableElement) return;
+
     const tableBody = tableElement.querySelector('tbody');
+    try {
+        const response = await fetch('/pet-table', { method: 'GET' });
+        const responseData = await response.json();
+        const demotableContent = responseData.data;
 
-    const response = await fetch('/pet-table', {
-        method: 'GET'
-    });
+        // Clear old data
+        if (tableBody) tableBody.innerHTML = '';
 
-    const responseData = await response.json();
-    const demotableContent = responseData.data;
-
-    // Always clear old, already fetched data before new fetching process.
-    if (tableBody) {
-        tableBody.innerHTML = '';
-    }
-
-    demotableContent.forEach(user => {
-        const row = tableBody.insertRow();
-        user.forEach((field, index) => {
-            const cell = row.insertCell(index);
-            cell.textContent = field;
+        // Populate table with new data
+        demotableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
         });
-    });
+    } catch (error) {
+        console.error("Error fetching pet table data:", error);
+    }
 }
 
-// This function resets or initializes the demotable.
 async function resetPetTable() {
-    const response = await fetch("/initiateNewPet", {
-        method: 'POST'
+    try {
+        const response = await fetch("/initiateNewPet", { method: 'POST' });
+        const responseData = await response.json();
+
+        if (responseData.success) {
+            const messageElement = document.getElementById('resetResultMsg');
+            if (messageElement) messageElement.textContent = "Table initiated successfully!";
+            fetchPetTableData();
+        } else {
+            alert("Error initiating table!");
+        }
+    } catch (error) {
+        console.error("Error resetting pet table:", error);
+    }
+}
+
+// ======================================================================
+// =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
+// LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
+// ======================================================================
+
+async function insertNewClient(event) {
+    event.preventDefault();
+    console.log("inserting new client");
+
+    const ClientFirstName = document.getElementById("ClientFirstName").value;
+    const ClientLastName = document.getElementById("ClientLastName").value;
+    const ClientAddress = document.getElementById("ClientAddress").value;
+    const ClientContact = document.getElementById("ClientContact").value;
+
+    const response = await fetch('/insert-new-client', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            FirstName: ClientFirstName,
+            LastName: ClientLastName,
+            ClientAddress: ClientAddress,
+            ClientContact: ClientContact
+        })
     });
+
     const responseData = await response.json();
+    const messageElement = document.getElementById("sign_up_status");
 
     if (responseData.success) {
-        const messageElement = document.getElementById('resetResultMsg');
-        messageElement.textContent = "demotable initiated successfully!";
-        fetchPetTableData();
+        if (messageElement) {
+            messageElement.textContent = `Account added! Your ClientID is ${responseData.clientID}. Keep this number for future login`;
+        }
     } else {
-        alert("Error initiating table!");
+        if (messageElement) messageElement.textContent = "An error occurred";
+    }
+    fetchClientTableData();
+}
+
+function fetchClientTableData() {
+    fetchAndDisplayClientTable();
+}
+
+async function fetchAndDisplayClientTable() {
+    const tableElement = document.getElementById('client_table');
+    if (!tableElement) return;
+
+    const tableBody = tableElement.querySelector('tbody');
+    try {
+        const response = await fetch('/client-table', { method: 'GET' });
+        const responseData = await response.json();
+        const demotableContent = responseData.data;
+
+        // Clear old data
+        if (tableBody) tableBody.innerHTML = '';
+
+        // Populate table with new data
+        demotableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error fetching client table data:", error);
+    }
+}
+
+async function resetClient() {
+    try {
+        const response = await fetch("/initiateNewClient", { method: 'POST' });
+        const responseData = await response.json();
+
+        if (responseData.success) {
+            const messageElement = document.getElementById('resetResultMsg');
+            if (messageElement) messageElement.textContent = "Client table initiated successfully!";
+            fetchClientTableData();
+        } else {
+            alert("Error initiating client table!");
+        }
+    } catch (error) {
+        console.error("Error resetting client table:", error);
     }
 }
