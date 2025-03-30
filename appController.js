@@ -90,6 +90,43 @@ router.post("/update-client", async (req, res) => {
     }
 });
 
+
+// ===========================================================================================
+// VeterinarianSpecializesInSpecies(VetLicenseNumber: INTEGER(10), SpeciesName: VARCHAR)
+// Veterinarian(VetLicenseNumber: INTEGER(10), Name: VARCHAR NOT NULL, ClinicName: VARCHAR, 
+// ContactNumber: INTEGER, EmailAddress: VARCHAR)
+// ===========================================================================================
+
+router.post("/insert-new-vet", async (req, res) => {
+    const {VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress } = req.body;
+    const insertResult = await appService.insertNewVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress );
+    if (insertResult !== false) {
+        res.json({
+            success: true,
+        });
+    } else {
+        res.status(500).json({
+            success: false,
+            message: "Failed to create account"
+        });
+    }
+});
+
+router.get('/vet-table', async (req, res) => {
+    const tableContent = await appService.fetchVetTableFromDb();
+    res.json({ data: tableContent });
+});
+
+router.post("/initiateNewVet", async (req, res) => {
+    const initiateResult = await appService.initiateNewVet();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+
 // Demotable, not used in app but here for reference
 router.post("/update-name-demotable", async (req, res) => {
     const { oldName, newName } = req.body;
@@ -124,6 +161,8 @@ router.post("/initiate-demotable", async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
+
+
 
 
 module.exports = router;

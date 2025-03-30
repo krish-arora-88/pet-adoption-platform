@@ -207,6 +207,60 @@ async function updateClient(clientId, FirstName, LastName, ClientAddress, Client
     });
 }
 
+// ===========================================================================================
+// VeterinarianSpecializesInSpecies(VetLicenseNumber: INTEGER(10), SpeciesName: VARCHAR)
+// Veterinarian(VetLicenseNumber: INTEGER(10), Name: VARCHAR NOT NULL, ClinicName: VARCHAR, 
+// ContactNumber: INTEGER, EmailAddress: VARCHAR)
+// ===========================================================================================
+
+async function insertNewVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress) {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `INSERT INTO Veterinarian (VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress) VALUES 
+            (:VetLicenseNumber, :Name, :ClinicName, :ContactNumber, :EmailAddress)`,
+            [VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress],
+            { autoCommit: true }
+        );
+
+        return result.rowsAffected && result.rowsAffected > 0;
+    }).catch(() => {
+        return false;
+    });
+}
+
+async function fetchVetTableFromDb() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute('SELECT * FROM Veterinarian');
+        return result.rows;
+    }).catch(() => {
+        return [];
+    });
+}
+
+async function initiateNewVet() {
+    return await withOracleDB(async (connection) => {
+        try {
+            await connection.execute(`DROP TABLE Veterinarian`);
+        } catch (err) {
+            console.log('Table might not exist, proceeding to create...');
+        }
+
+        const result = await connection.execute(`
+            CREATE TABLE Veterinarian (
+                VetLicenseNumber NUMBER(10) PRIMARY KEY,
+                Name VARCHAR2(100) NOT NULL,
+                ClinicName VARCHAR2(100),
+                ContactNumber NUMBER(20),
+                EmailAddress VARCHAR2(100)
+                )
+            
+        `);
+        return true;
+    }).catch(() => {
+        return false;
+    });
+}
+
 module.exports = {
     testOracleConnection,
     // initiateDemotable, 
@@ -219,5 +273,9 @@ module.exports = {
     insertNewClient,
     initiateNewClient,
     updateClient,
-    fetchClientTableFromDb
+    fetchClientTableFromDb,
+    insertNewVet,
+    fetchVetTableFromDb,
+    initiateNewVet
+
 };

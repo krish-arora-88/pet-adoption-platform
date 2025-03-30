@@ -27,6 +27,15 @@ window.onload = function () {
     if (document.getElementById("client_update")) {
         document.getElementById("client_update").addEventListener("submit", updateClient);
     }
+
+    // vet practice registration
+
+    if (document.getElementById("registerVet")) {
+        document.getElementById("registerVet").addEventListener("submit", insertNewVet);
+    }
+    if (document.getElementById("resetVet")) {
+        document.getElementById("resetVet").addEventListener("click", resetVet);
+    }
 };
 
 async function checkDbConnection() {
@@ -287,3 +296,72 @@ function addEmployee(event) {
     document.getElementById("employeeForm").reset();
 }
 
+
+// ===========================================================================================
+// VeterinarianSpecializesInSpecies(VetLicenseNumber: INTEGER(10), SpeciesName: VARCHAR)
+// Veterinarian(VetLicenseNumber: INTEGER(10), Name: VARCHAR NOT NULL, ClinicName: VARCHAR, 
+// ContactNumber: INTEGER, EmailAddress: VARCHAR)
+// ===========================================================================================
+
+
+async function insertNewVet(event) {
+    event.preventDefault();
+    document.getElementById("vet_species_status").textContent = "submit clicked";
+    console.log("inserting new vet");
+
+
+    const vetID = document.getElementById("vetID").value;
+    const vetName = document.getElementById("vetName").value;
+    const clinicName = document.getElementById("clinicName").value;
+    const vetContact = document.getElementById("vetContact").value;
+    const vetEmail = document.getElementById("vetEmail").value;
+    const vetSpecialty = document.getElementsByName("vetSpecialty").value;
+
+
+    const response = await fetch('/insert-new-vet', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            VetLicenseNumber: vetID,
+            Name: vetName,
+            ClinicName: clinicName,
+            ContactNumber: vetContact,
+            EmailAddress: vetEmail
+        })
+    });
+
+    const responseData = await response.json();
+    const messageElement = document.getElementById("vet_register_status");
+
+    if (responseData.success) {
+        if (messageElement) {
+            messageElement.textContent = `Practice Registered!`;
+        }
+    } else {
+        if (messageElement) messageElement.textContent = "An error occurred";
+    }
+
+    // vet_species_status // TODO - add species selection to vetSpecializes table.
+
+
+    fetchClientTableData();
+}
+
+async function resetVet() {
+    try {
+        const response = await fetch("/initiateNewVet", { method: 'POST' });
+        const responseData = await response.json();
+
+        if (responseData.success) {
+            const messageElement = document.getElementById('resetResultMsg');
+            if (messageElement) messageElement.textContent = "Vet table initiated successfully!";
+            fetchClientTableData();
+        } else {
+            alert("Error initiating vet table!");
+        }
+    } catch (error) {
+        console.error("Error resetting vet table:", error);
+    }
+}
+
+//TODO - add update vet table
