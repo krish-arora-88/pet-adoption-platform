@@ -98,8 +98,8 @@ router.post("/update-client", async (req, res) => {
 // ===========================================================================================
 
 router.post("/insert-new-vet", async (req, res) => {
-    const {VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress } = req.body;
-    const insertResult = await appService.insertNewVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress );
+    const { VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress } = req.body;
+    const insertResult = await appService.insertNewVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress);
     if (insertResult !== false) {
         res.json({
             success: true,
@@ -120,6 +120,16 @@ router.get('/vet-table', async (req, res) => {
 router.post("/initiateNewVet", async (req, res) => {
     const initiateResult = await appService.initiateNewVet();
     if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/update-vet", async (req, res) => {
+    const { VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress } = req.body;
+    const updateResult = await appService.updateVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress);
+    if (updateResult) {
         res.json({ success: true });
     } else {
         res.status(500).json({ success: false });

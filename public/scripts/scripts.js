@@ -36,6 +36,13 @@ window.onload = function () {
     if (document.getElementById("resetVet")) {
         document.getElementById("resetVet").addEventListener("click", resetVet);
     }
+
+    if (document.getElementById("vet_update")) {
+        document.getElementById("vet_update").addEventListener("submit", updateVet);
+    }
+    if (document.getElementById("vet_table")) {
+        fetchAndDisplayVetTable();
+    }
 };
 
 async function checkDbConnection() {
@@ -275,7 +282,7 @@ if (document.getElementById("employeeForm")) {
 
 function addEmployee(event) {
     event.preventDefault();
-    
+
     const firstName = document.getElementById("firstName").value;
     const lastName = document.getElementById("lastName").value;
     const role = document.getElementById("role").value;
@@ -365,3 +372,65 @@ async function resetVet() {
 }
 
 //TODO - add update vet table
+
+async function updateVet(event) {
+    event.preventDefault();
+
+    // Get updated values from the form fields
+    const vetLicense = document.getElementById("vetLicense_update").value;
+    const vetName = document.getElementById("vetName_update").value;
+    const clinicName = document.getElementById("clinicName_update").value;
+    const vetContact = document.getElementById("vetContact_update").value;
+    const vetEmail = document.getElementById("vetEmail_update").value;
+
+    const payload = {
+        VetLicenseNumber: vetLicense,
+        Name: vetName,
+        ClinicName: clinicName,
+        ContactNumber: vetContact,
+        EmailAddress: vetEmail
+    };
+
+    try {
+        const response = await fetch('/update-vet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const responseData = await response.json();
+        const updateStatusElem = document.getElementById("vet_update_status");
+
+        if (responseData.success) {
+            updateStatusElem.textContent = "Vet updated successfully!";
+            fetchAndDisplayVetTable();
+        } else {
+            updateStatusElem.textContent = "Error updating vet.";
+        }
+    } catch (error) {
+        console.error("Error updating vet:", error);
+        const updateStatusElem = document.getElementById("vet_update_status");
+        if (updateStatusElem) updateStatusElem.textContent = "Error updating vet.";
+    }
+}
+
+async function fetchAndDisplayVetTable() {
+    const tableElement = document.getElementById('vet_table');
+    if (!tableElement) return;
+    const tableBody = tableElement.querySelector('tbody');
+    try {
+        const response = await fetch('/vet-table', { method: 'GET' });
+        const responseData = await response.json();
+        const demotableContent = responseData.data;
+        if (tableBody) tableBody.innerHTML = '';
+        demotableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error fetching vet table data:", error);
+    }
+}

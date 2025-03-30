@@ -261,6 +261,24 @@ async function initiateNewVet() {
     });
 }
 
+async function updateVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress) {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `UPDATE Veterinarian
+             SET Name = :Name,
+                 ClinicName = :ClinicName,
+                 ContactNumber = :ContactNumber,
+                 EmailAddress = :EmailAddress
+             WHERE VetLicenseNumber = :VetLicenseNumber`,
+            [Name, ClinicName, ContactNumber, EmailAddress, VetLicenseNumber],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
+    }).catch(() => {
+        return false;
+    });
+}
+
 module.exports = {
     testOracleConnection,
     // initiateDemotable, 
@@ -276,6 +294,7 @@ module.exports = {
     fetchClientTableFromDb,
     insertNewVet,
     fetchVetTableFromDb,
-    initiateNewVet
+    initiateNewVet,
+    updateVet
 
 };
