@@ -255,3 +255,35 @@ async function resetClient() {
         console.error("Error resetting client table:", error);
     }
 }
+
+// ======================================================================
+// =========== CenterEmployee (First Name, Last Name, Role, Salary) =====
+// ======================================================================
+
+if (document.getElementById("employeeForm")) {
+    document.getElementById("employeeForm").addEventListener("submit", addEmployee);
+}
+
+function addEmployee(event) {
+    event.preventDefault();
+    
+    const firstName = document.getElementById("firstName").value;
+    const lastName = document.getElementById("lastName").value;
+    const role = document.getElementById("role").value;
+    const salary = document.getElementById("salary").value;
+
+    const tableBody = document.getElementById("employeeTableBody");
+    const row = document.createElement("tr");
+
+    row.innerHTML = `
+    <td>${firstName}</td>
+    <td>${lastName}</td>
+    <td>${role}</td>
+    <td>${salary}</td>
+    <td><button onclick="this.parentNode.parentNode.remove()">Delete</button></td>
+    `;
+
+    tableBody.appendChild(row);
+    document.getElementById("employeeForm").reset();
+}
+

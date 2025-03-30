@@ -6,47 +6,12 @@
   <title>Employee Management</title>
   <link rel="stylesheet" href="../styles/styles.css" />
   <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
-  <style>
-    input::-webkit-outer-spin-button,
-    input::-webkit-inner-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-    input[type=number] {
-      -moz-appearance: textfield;
-    }
-  </style>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const form = document.getElementById('employeeForm');
-      const tableBody = document.getElementById('employeeTableBody');
 
-      form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const firstName = document.getElementById('firstName').value;
-        const lastName = document.getElementById('lastName').value;
-        const role = document.getElementById('role').value;
-        const salary = document.getElementById('salary').value;
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${firstName}</td>
-          <td>${lastName}</td>
-          <td>${role}</td>
-          <td>${salary}</td>
-          <td><button onclick="this.parentNode.parentNode.remove()">Delete</button></td>
-        `;
-        tableBody.appendChild(row);
-        form.reset();
-      });
-    });
-  </script>
 </head>
 <body>
   <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" />
   <h1>Employee Management</h1>
   
-  <!-- Employee Form -->
   <form id="employeeForm">
     <input type="text" id="firstName" placeholder="First Name" required>
     <input type="text" id="lastName" placeholder="Last Name" required>
@@ -71,5 +36,8 @@
   </table>
   
   <p><a href="../index.html">Return Home</a></p>
+
+  <script src="../scripts/scripts.js"></script>
+
 </body>
 </html>
