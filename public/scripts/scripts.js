@@ -24,6 +24,9 @@ window.onload = function () {
     if (document.getElementById("client_table")) {
         fetchAndDisplayClientTable();
     }
+    if (document.getElementById("client_update")) {
+        document.getElementById("client_update").addEventListener("submit", updateClient);
+    }
 };
 
 async function checkDbConnection() {
@@ -191,6 +194,48 @@ async function fetchAndDisplayClientTable() {
         });
     } catch (error) {
         console.error("Error fetching client table data:", error);
+    }
+}
+
+async function updateClient(event) {
+    event.preventDefault();
+
+    // Retrieve values from the update form
+    const clientId = parseInt(document.getElementById("ClientNumber").value, 10);
+    const updatedFirstName = document.getElementById("ClientFirstName_update").value;
+    const updatedLastName = document.getElementById("ClientLastName_update").value;
+    const updatedAddress = document.getElementById("ClientAddress_update").value;
+    const updatedContact = document.getElementById("ClientContact_update").value;
+
+    // Create the payload for updating the client
+    const payload = {
+        clientId,
+        FirstName: updatedFirstName,
+        LastName: updatedLastName,
+        ClientAddress: updatedAddress,
+        ClientContact: updatedContact
+    };
+
+    try {
+        const response = await fetch('/update-client', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const responseData = await response.json();
+        const updateStatusElem = document.getElementById("update_status");
+
+        if (responseData.success) {
+            updateStatusElem.textContent = "Account updated successfully!";
+            fetchClientTableData();
+        } else {
+            updateStatusElem.textContent = "Error updating account.";
+        }
+    } catch (error) {
+        console.error("Error updating account:", error);
+        const updateStatusElem = document.getElementById("update_status");
+        if (updateStatusElem) updateStatusElem.textContent = "Error updating account.";
     }
 }
 
