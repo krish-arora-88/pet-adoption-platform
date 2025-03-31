@@ -44,6 +44,8 @@ window.onload = function () {
         fetchAndDisplayVetTable();
     }
 
+    //adoption centre registration
+
     if (document.getElementById("adoption_center_table")) {
         initializeAdoptionCenterTable();
         fetchAndDisplayACTable();
@@ -383,7 +385,6 @@ async function resetVet() {
     }
 }
 
-//TODO - add update vet table
 
 async function updateVet(event) {
     event.preventDefault();
