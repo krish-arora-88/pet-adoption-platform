@@ -44,8 +44,10 @@ window.onload = function () {
         fetchAndDisplayVetTable();
     }
 
+    // Adoption Center
+
     if (document.getElementById("adoption_center_table")) {
-        initializeAdoptionCenterTable();
+        // initializeAdoptionCenterTable();
         fetchAndDisplayACTable();
     }
     if (document.getElementById("new_adoption_center")) {
@@ -54,6 +56,10 @@ window.onload = function () {
 
     if (document.getElementById("adoption_center_update")) {
         document.getElementById("adoption_center_update").addEventListener("submit", updateAdoptionCenter);
+    }
+
+    if (document.getElementById("resetACTable")) {
+        document.getElementById("resetACTable").addEventListener("click", initializeAdoptionCenterTable);
     }
 };
 
