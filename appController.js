@@ -165,7 +165,10 @@ router.post("/insert-new-adoption-center", async (req, res) => {
     if (insertResult) {
         res.json({ success: true });
     } else {
-        res.status(500).json({ success: false });
+        res.status(500).json({
+            success: false,
+            message: "Failed to create adoption center"
+        });
     }
 });
 
@@ -178,15 +181,6 @@ router.post("/update-adoption-center", async (req, res) => {
         AnimalCapacity
     );
     if (updateResult) {
-        res.json({ success: true });
-    } else {
-        res.status(500).json({ success: false });
-    }
-});
-
-router.post("/initiateNewAdoptionCenter", async (req, res) => {
-    const initiateResult = await appService.initiateNewAdoptionCenter();
-    if (initiateResult) {
         res.json({ success: true });
     } else {
         res.status(500).json({ success: false });

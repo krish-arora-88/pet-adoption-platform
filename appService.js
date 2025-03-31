@@ -284,9 +284,8 @@ async function updateVet(VetLicenseNumber, Name, ClinicName, ContactNumber, Emai
 // ======================================================================
 async function fetchAdoptionCenterTableFromDb() {
     return await withOracleDB(async (connection) => {
-        // SELECT your columns in the order you want them displayed
         const result = await connection.execute("SELECT * FROM AdoptionCenter");
-        return result.rows; // Typically returns rows as arrays
+        return result.rows;
     }).catch(() => {
         return [];
     });
@@ -309,41 +308,22 @@ async function insertNewAdoptionCenter(CenterLicenseNumber, CenterName, Address,
 
 async function initiateNewAdoptionCenter() {
     return await withOracleDB(async (connection) => {
-        // First check if the table exists
-        const tableExists = await checkIfTableExists(connection, "AdoptionCenter");
-
-        // Only create the table if it doesn't exist
-        if (!tableExists) {
-            await connection.execute(`
+        try {
+            await connection.execute(`DROP TABLE AdoptionCenter`);
+        } catch (err) {
+            console.log('Table might not exist, proceeding to create...');
+        }
+        const result = await connection.execute(`
               CREATE TABLE AdoptionCenter (
                 CenterLicenseNumber NUMBER(10) PRIMARY KEY,
                 CenterName VARCHAR2(100),
                 Address VARCHAR2(100),
                 AnimalCapacity NUMBER(10)
-              )
-            `);
-            console.log("AdoptionCenter table created successfully");
-        } else {
-            console.log("AdoptionCenter table already exists");
-        }
+              )`);
         return true;
-    }).catch((err) => {
-        console.error("Error in initiateNewAdoptionCenter:", err);
+    }).catch(() => {
         return false;
     });
-}
-
-async function checkIfTableExists(connection, tableName) {
-    try {
-        const result = await connection.execute(
-            `SELECT table_name FROM user_tables WHERE table_name = :tableName`,
-            [tableName.toUpperCase()]
-        );
-        return result.rows.length > 0;
-    } catch (err) {
-        console.error("Error checking if table exists:", err);
-        return false;
-    }
 }
 
 async function updateAdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity) {
