@@ -136,11 +136,47 @@ router.post("/update-vet", async (req, res) => {
     }
 });
 
+// ======================================================================
+// =========== AdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity)
+// ======================================================================
+router.post("/initiateNewAdoptionCenter", async (req, res) => {
+    const initiateResult = await appService.initiateNewAdoptionCenter();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
 
-// Demotable, not used in app but here for reference
-router.post("/update-name-demotable", async (req, res) => {
-    const { oldName, newName } = req.body;
-    const updateResult = await appService.updateNameDemotable(oldName, newName);
+
+router.get("/adoption-center-table", async (req, res) => {
+    const tableContent = await appService.fetchAdoptionCenterTableFromDb();
+    res.json({ data: tableContent });
+});
+
+router.post("/insert-new-adoption-center", async (req, res) => {
+    const { CenterLicenseNumber, CenterName, Address, AnimalCapacity } = req.body;
+    const insertResult = await appService.insertNewAdoptionCenter(
+        CenterLicenseNumber,
+        CenterName,
+        Address,
+        AnimalCapacity
+    );
+    if (insertResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/update-adoption-center", async (req, res) => {
+    const { CenterLicenseNumber, CenterName, Address, AnimalCapacity } = req.body;
+    const updateResult = await appService.updateAdoptionCenter(
+        CenterLicenseNumber,
+        CenterName,
+        Address,
+        AnimalCapacity
+    );
     if (updateResult) {
         res.json({ success: true });
     } else {
@@ -148,29 +184,49 @@ router.post("/update-name-demotable", async (req, res) => {
     }
 });
 
-router.get('/count-demotable', async (req, res) => {
-    const tableCount = await appService.countDemotable();
-    if (tableCount >= 0) {
-        res.json({
-            success: true,
-            count: tableCount
-        });
-    } else {
-        res.status(500).json({
-            success: false,
-            count: tableCount
-        });
-    }
-});
-
-router.post("/initiate-demotable", async (req, res) => {
-    const initiateResult = await appService.initiateDemotable();
+router.post("/initiateNewAdoptionCenter", async (req, res) => {
+    const initiateResult = await appService.initiateNewAdoptionCenter();
     if (initiateResult) {
         res.json({ success: true });
     } else {
         res.status(500).json({ success: false });
     }
 });
+
+// // Demotable, not used in app but here for reference
+// router.post("/update-name-demotable", async (req, res) => {
+//     const { oldName, newName } = req.body;
+//     const updateResult = await appService.updateNameDemotable(oldName, newName);
+//     if (updateResult) {
+//         res.json({ success: true });
+//     } else {
+//         res.status(500).json({ success: false });
+//     }
+// });
+
+// router.get('/count-demotable', async (req, res) => {
+//     const tableCount = await appService.countDemotable();
+//     if (tableCount >= 0) {
+//         res.json({
+//             success: true,
+//             count: tableCount
+//         });
+//     } else {
+//         res.status(500).json({
+//             success: false,
+//             count: tableCount
+//         });
+//     }
+// });
+
+// router.post("/initiate-demotable", async (req, res) => {
+//     const initiateResult = await appService.initiateDemotable();
+//     if (initiateResult) {
+//         res.json({ success: true });
+//     } else {
+//         res.status(500).json({ success: false });
+//     }
+// });
 
 
 

@@ -43,6 +43,18 @@ window.onload = function () {
     if (document.getElementById("vet_table")) {
         fetchAndDisplayVetTable();
     }
+
+    if (document.getElementById("adoption_center_table")) {
+        initializeAdoptionCenterTable();
+        fetchAndDisplayACTable();
+    }
+    if (document.getElementById("new_adoption_center")) {
+        document.getElementById("new_adoption_center").addEventListener("submit", insertNewAdoptionCentre);
+    }
+
+    if (document.getElementById("adoption_center_update")) {
+        document.getElementById("adoption_center_update").addEventListener("submit", updateAdoptionCenter);
+    }
 };
 
 async function checkDbConnection() {
@@ -432,5 +444,98 @@ async function fetchAndDisplayVetTable() {
         });
     } catch (error) {
         console.error("Error fetching vet table data:", error);
+    }
+}
+
+async function fetchAndDisplayACTable() {
+    const tableElement = document.getElementById('adoption_center_table');
+    if (!tableElement) return;
+    const tableBody = tableElement.querySelector('tbody');
+    try {
+        const response = await fetch('/adoption-center-table', { method: 'GET' });
+        const responseData = await response.json();
+        const demotableContent = responseData.data;
+        if (tableBody) tableBody.innerHTML = '';
+        demotableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error fetching Adoption Centre table data:", error);
+    }
+}
+
+async function insertNewAdoptionCentre(event) {
+    event.preventDefault();
+
+    const centerLicenseNumber = document.getElementById("centerLicenseNumber").value;
+    const centerName = document.getElementById("centerName").value;
+    const address = document.getElementById("address").value;
+    const animalCapacity = document.getElementById("animalCapacity").value;
+
+    const response = await fetch("/insert-new-adoption-center", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            CenterLicenseNumber: centerLicenseNumber,
+            CenterName: centerName,
+            Address: address,
+            AnimalCapacity: animalCapacity
+        })
+    });
+
+    const responseData = await response.json();
+    const messageElement = document.getElementById("new_adoption_center_message");
+
+    if (responseData.success) {
+        if (messageElement) {
+            messageElement.textContent = `Adoption Center added successfully!`;
+        }
+    } else {
+        if (messageElement) messageElement.textContent = "Error occurred while adding the Center.";
+    }
+
+    fetchAndDisplayACTable();
+}
+
+async function updateAdoptionCenter(event) {
+    event.preventDefault();
+    const centerLicenseNumber = document.getElementById("centerLicenseNumber_update").value;
+    const centerName = document.getElementById("centerName_update").value;
+    const address = document.getElementById("address_update").value;
+    const animalCapacity = document.getElementById("animalCapacity_update").value;
+
+    const response = await fetch("/update-adoption-center", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            CenterLicenseNumber: centerLicenseNumber,
+            CenterName: centerName,
+            Address: address,
+            AnimalCapacity: animalCapacity
+        })
+    });
+
+    const responseData = await response.json();
+    const updateStatusElem = document.getElementById("adoption_update_status");
+    if (responseData.success) {
+        updateStatusElem.textContent = "Adoption Center updated successfully!";
+        // Refresh table
+        fetchAndDisplayACTable();
+    } else {
+        updateStatusElem.textContent = "Error updating Adoption Center.";
+    }
+}
+
+async function initializeAdoptionCenterTable() {
+    try {
+        const response = await fetch('/initiateNewAdoptionCenter', { method: 'POST' });
+        const data = await response.json();
+        console.log("Table initialization result:", data.success);
+    } catch (error) {
+        console.error("Error initializing AdoptionCenter table:", error);
     }
 }
