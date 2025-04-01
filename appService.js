@@ -104,6 +104,8 @@ async function initiateNewPet() {
                 Age NUMBER(3),
                 Breed VARCHAR2(50) NOT NULL,
                 Gender CHAR(1) NOT NULL
+                SpeciesName VARCHAR2(50),
+                CONSTRAINT fk_species FOREIGN KEY (SpeciesName) REFERENCES Species(speciesName)
                 )
         `);
         return true;
@@ -115,8 +117,8 @@ async function initiateNewPet() {
 async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
-            `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender)`,
-            [MicrochipID, Name, Age, Breed, Gender],
+            `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender, :SpeciesName)`,
+            [MicrochipID, Name, Age, Breed, Gender, SpeciesName],
             { autoCommit: true }
         );
 
@@ -343,6 +345,64 @@ async function updateAdoptionCenter(CenterLicenseNumber, CenterName, Address, An
     });
 }
 
+// ===========================================================================================
+// ======== Species(SpeciesName, HousingSpaceRequired, GroomingRoutine, DietType) ============
+// ===========================================================================================
+
+async function initiateSpeciesTable() {
+    return await withOracleDB(async (connection) => {
+        try {
+            await connection.execute(`DROP TABLE Species`);
+        } catch (error) {
+            console.log('Species table did not exist.')
+        }
+        const result = await connection.execute(`
+            CREATE TABLE Species (
+                speciesName VARCHAR2(50) PRIMARY KEY,
+                HousingSpaceRequired VARCHAR2(50), 
+                GroomingRoutine VARCHAR2(50),
+                DietType VARCHAR2 (50)
+            )
+        `);
+        return true;
+    }).catch((error) => {
+        console.error("Error creating Species table:", error);
+        return false;
+    });
+}
+
+async function insertNewSpecies(speciesName, housingSpace, groomingRoutine, dietType) {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `INSERT INTO Species (speciesName, HousingSpaceRequired, GroomingRoutine, DietType)
+            VALUES (:speciesName, :housingSpace, :groomingRoutine, :dietType)`,
+            [speciesName, housingSpace, groomingRoutine, dietType],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
+    }).catch(() => {
+        return false;
+    });
+}
+
+async function fetchSpeciesList() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `SELECT speciesName AS "SpeciesName",
+            HousingSpaceRequired AS "HousingSpaceRequired",
+            GroomingRoutine AS "GroomingRoutine",
+            DietType AS "DietType"
+            FROM Species`,
+            [],
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+            );
+        return result.rows;
+    }).catch((error) => {
+        console.error("Error in fetchSpeciesList:", error);
+        return[];
+    })
+}
+
 module.exports = {
     testOracleConnection,
     // initiateDemotable, 
@@ -363,6 +423,10 @@ module.exports = {
     fetchAdoptionCenterTableFromDb,
     insertNewAdoptionCenter,
     updateAdoptionCenter,
-    initiateNewAdoptionCenter
+    initiateNewAdoptionCenter,
+    initiateSpeciesTable,
+    insertNewSpecies,
+    fetchSpeciesList
 
 };
+

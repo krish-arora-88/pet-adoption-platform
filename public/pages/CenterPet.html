@@ -4,16 +4,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../scripts/scripts.js"></script>
     <link rel="stylesheet" href="../styles/styles.css">
     <title>Center Pet Management</title>
 </head>
 
 <body>
-    <a href="/">
-        <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
-    </a>
+    <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
+    <h1>Species Management</h1>
+
+    <form id="speciesForm">
+        <input type="text" id="speciesName" placeholder="Species Name" required>
+        <input type="text" id="housingSpace" placeholder="Housing Space Required" required>
+        <input type="text" id="groomingRoutine" placeholder="Grooming Routine" required>
+        <input type="text" id="dietType" placeholder="Diet Type" required>
+        <button type="submit">Add Species</button>
+    </form>
+
+    <p id="species_form_message"></p>
+
+    <table id="speciesTable" border="1">
+        <thead>
+            <tr>
+                <th>Species Name</th>
+                <th>Housing Space Required</th>
+                <th>Grooming Routine</th>
+                <th>Diet Type</th>
+            </tr>
+        </thead>
+        <tbody id="speciesTableBody"></tbody>
+    </table>
+
+    <button id="resetSpeciesTable">Reset Species Table</button>
+
     <p><a href="../index.html">Return Home</a></p>
+
+    <script src="../scripts/scripts.js"></script>
+
 </body>
 
 </html>

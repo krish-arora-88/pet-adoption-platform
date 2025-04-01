@@ -61,6 +61,22 @@ window.onload = function () {
     if (document.getElementById("resetACTable")) {
         document.getElementById("resetACTable").addEventListener("click", initializeAdoptionCenterTable);
     }
+
+    // populate species table
+
+    if (document.getElementById("speciesSelect")) {
+        populateSpeciesDropdown();
+    }
+
+    if (document.getElementById("speciesForm")) {
+        document.getElementById("speciesForm").addEventListener("submit", handleInsertSpecies);
+    }
+
+    if (document.getElementById("resetSpeciesTable")) {
+        document.getElementById("resetSpeciesTable").addEventListener("click", resetSpeciesTable);
+    
+    }
+    
 };
 
 async function checkDbConnection() {
@@ -92,6 +108,7 @@ async function insertNewPet(event) {
     const petAge = document.getElementById("petAge").value;
     const breed = document.getElementById("breed").value;
     const gender = document.getElementById("gender").value;
+    const speciesName = document.getElementById("speciesSelect").value;
 
     const response = await fetch('/insert-new-pet', {
         method: 'POST',
@@ -101,7 +118,8 @@ async function insertNewPet(event) {
             Name: petname,
             Age: petAge,
             Breed: breed,
-            Gender: gender
+            Gender: gender,
+            SpeciesName: speciesName
         })
     });
 
@@ -542,5 +560,121 @@ async function initializeAdoptionCenterTable() {
         console.log("Table initialization result:", data.success);
     } catch (error) {
         console.error("Error initializing AdoptionCenter table:", error);
+    }
+}
+
+// ===========================================================================================
+// ===========================================================================================
+// ======== Species(SpeciesName, HousingSpaceRequired, GroomingRoutine, DietType) ============
+// ===========================================================================================
+// ===========================================================================================
+
+async function handleInsertSpecies(event) {
+    event.preventDefault(); 
+
+    const speciesName = document.getElementById("speciesName").value;
+    const housingSpace = document.getElementById("housingSpace").value;
+    const groomingRoutine = document.getElementById("groomingRoutine").value;
+    const dietType = document.getElementById("dietType").value;
+
+    try {
+        const response = await fetch('/insert-new-species', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                speciesName: speciesName,
+                housingSpace: housingSpace,
+                groomingRoutine: groomingRoutine,
+                dietType: dietType
+            })
+        });
+
+        const data = await response.json();
+        const messageElem = document.getElementById("species_form_message");
+
+        if (data.success) {
+            messageElem.textContent = "Species added successfully.";
+            fetchAndDisplaySpeciesTable();
+            populateSpeciesDropdown();
+        } else {
+            messageElem.textContent = "Error adding species. It may already exist.";
+        }
+    } catch (error) {
+        console.error("Error in handleInsertSpecies:", error);
+        document.getElementById("species_form_message").textContent = "Error adding species.";
+    }
+}
+
+
+async function fetchAndDisplaySpeciesTable() {
+    const speciesTableBody = document.getElementById("speciesTableBody");
+    if (!speciesTableBody) return;
+
+    speciesTableBody.innerHTML = "";
+
+    try {
+        const response = await fetch('/species-list', { method: 'GET' });
+        const speciesData = await response.json();
+
+        speciesData.forEach(species => {
+            const row = speciesTableBody.insertRow();
+
+            const cellName = row.insertCell(0);
+            const cellHousing = row.insertCell(1);
+            const cellGrooming = row.insertCell(2);
+            const cellDiet = row.insertCell(3);
+
+            cellName.textContent = species.SpeciesName;
+            cellHousing.textContent = species.HousingSpaceRequired;
+            cellGrooming.textContent = species.GroomingRoutine;
+            cellDiet.textContent = species.DietType;
+        });
+
+    } catch (error) {
+        console.error("Error fetching species table:", error);
+    }
+}
+
+async function resetSpeciesTable() {
+    try {
+        const response = await fetch('/initiateNewSpecies', { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            alert("Species table reset.");
+            fetchAndDisplaySpeciesTable();
+
+        } else {
+            alert("Error resetting species table.");
+        }
+    } catch (error) {
+        console.error("Error resetting species table:", error);
+    }
+} 
+
+// populates speciesSelect with species for inserting new pets
+
+async function populateSpeciesDropdown() {
+    const speciesSelect = document.getElementById("speciesSelect");
+    if (!speciesSelect) return;
+
+    try {
+        const response = await fetch('/species-list', { method: 'GET' });
+        const speciesData = await response.json();
+
+        speciesSelect.innerHTML = "";
+
+        const placeHolder = document.createElement("option");
+        placeHolder.value = "";
+        placeHolder.textContent = "-- Select Species --";
+        speciesSelect.appendChild(placeHolder);
+
+        speciesData.forEach(species => {
+            const option = document.createElement("option");
+            option.value = species.SpeciesName;
+            option.textContent = species.SpeciesName;
+            speciesSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error("Error fetching species for dropdown:", error);
     }
 }

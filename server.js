@@ -33,3 +33,28 @@ app.get('/pages', (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}/`);
 });
+
+// Species route 
+
+const db = require('./appService');
+
+app.get('/species-list', async (req, res) => {
+    try {
+        const rows = await db.fetchSpeciesList();
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching species:', error);
+        res.status(500).json({ error: 'Error fetching species' });
+    }
+});
+
+app.post('/insert-new-species', async (req, res) => {
+    try {
+        const { speciesName, housingSpace, groomingRoutine, dietType } = req.body;
+        const success = await db.insertNewSpecies(speciesName, housingSpace, groomingRoutine, dietType);
+        res.json({ success });
+    } catch (error) {
+        console.error('Error inserting new species:', error);
+        res.status(500).json({ error: 'Error fetching species' });
+    }
+});
