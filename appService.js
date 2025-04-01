@@ -395,12 +395,120 @@ async function fetchSpeciesList() {
             FROM Species`,
             [],
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
-            );
+        );
         return result.rows;
     }).catch((error) => {
         console.error("Error in fetchSpeciesList:", error);
-        return[];
+        return [];
     })
+}
+
+async function fetchAdoptionTableFromDb() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute('SELECT * FROM Adoption');
+        return result.rows;
+    }).catch(() => {
+        return [];
+    });
+}
+
+async function initiateNewAdoption() {
+    return await withOracleDB(async (connection) => {
+        try {
+            await connection.execute(`DROP TABLE Adoption`);
+        } catch (err) {
+            console.log('Table might not exist, proceeding to create...');
+        }
+
+        const result = await connection.execute(`
+            CREATE TABLE Adoption (
+                PetMicrochipID NUMBER(15),
+                AdoptionDate DATE,
+                ClientID NUMBER(10),
+                CenterLicenseNumber NUMBER(10),
+                PRIMARY KEY (PetMicrochipID),
+                FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
+                FOREIGN KEY (ClientID) REFERENCES Client(ClientID),
+                FOREIGN KEY (CenterLicenseNumber) REFERENCES AdoptionCenter(CenterLicenseNumber)
+            )
+        `);
+
+        return true;
+    }).catch((err) => {
+        console.error("Error creating Adoption table:", err);
+        return false;
+    });
+}
+
+async function insertNewAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) {
+    return await withOracleDB(async (connection) => {
+        // Format date properly for Oracle
+        let formattedDate;
+
+        try {
+            // Handle date in YYYYMMDD format
+            if (AdoptionDate.length === 8) {
+                const year = AdoptionDate.substring(0, 4);
+                const month = AdoptionDate.substring(4, 6);
+                const day = AdoptionDate.substring(6, 8);
+                formattedDate = `${year}-${month}-${day}`;
+            } else {
+                // Assume it's already in proper format
+                formattedDate = AdoptionDate;
+            }
+
+            const result = await connection.execute(
+                `INSERT INTO Adoption (PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) 
+                 VALUES (:PetMicrochipID, TO_DATE(:AdoptionDate, 'YYYY-MM-DD'), :ClientID, :CenterLicenseNumber)`,
+                [PetMicrochipID, formattedDate, ClientID, CenterLicenseNumber],
+                { autoCommit: true }
+            );
+
+            return result.rowsAffected && result.rowsAffected > 0;
+        } catch (error) {
+            console.error("Error inserting adoption:", error);
+            return false;
+        }
+    }).catch(() => {
+        return false;
+    });
+}
+
+async function updateAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) {
+    return await withOracleDB(async (connection) => {
+        // Format date properly for Oracle
+        let formattedDate;
+
+        try {
+            // Handle date in YYYYMMDD format
+            if (AdoptionDate.length === 8) {
+                const year = AdoptionDate.substring(0, 4);
+                const month = AdoptionDate.substring(4, 6);
+                const day = AdoptionDate.substring(6, 8);
+                formattedDate = `${year}-${month}-${day}`;
+            } else {
+                // Assume it's already in proper format
+                formattedDate = AdoptionDate;
+            }
+
+            const result = await connection.execute(
+                `UPDATE Adoption 
+                 SET AdoptionDate = TO_DATE(:AdoptionDate, 'YYYY-MM-DD'), 
+                     ClientID = :ClientID, 
+                     CenterLicenseNumber = :CenterLicenseNumber
+                 WHERE PetMicrochipID = :PetMicrochipID`,
+                [formattedDate, ClientID, CenterLicenseNumber, PetMicrochipID],
+                { autoCommit: true }
+            );
+
+            return result.rowsAffected && result.rowsAffected > 0;
+        } catch (error) {
+            console.error("Error updating adoption:", error);
+            return false;
+        }
+    }).catch(() => {
+        return false;
+    });
 }
 
 module.exports = {
@@ -426,7 +534,11 @@ module.exports = {
     initiateNewAdoptionCenter,
     initiateSpeciesTable,
     insertNewSpecies,
-    fetchSpeciesList
+    fetchSpeciesList,
+    fetchAdoptionTableFromDb,
+    insertNewAdoption,
+    updateAdoption,
+    initiateNewAdoption
 
 };
 

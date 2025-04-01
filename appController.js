@@ -187,6 +187,55 @@ router.post("/update-adoption-center", async (req, res) => {
     }
 });
 
+router.get('/adoption-table', async (req, res) => {
+    const tableContent = await appService.fetchAdoptionTableFromDb();
+    res.json({ data: tableContent });
+});
+
+router.post("/initiateNewAdoption", async (req, res) => {
+    const initiateResult = await appService.initiateNewAdoption();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/insert-new-adoption", async (req, res) => {
+    const { PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber } = req.body;
+    const insertResult = await appService.insertNewAdoption(
+        PetMicrochipID,
+        AdoptionDate,
+        ClientID,
+        CenterLicenseNumber
+    );
+
+    if (insertResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({
+            success: false,
+            message: "Failed to create adoption record"
+        });
+    }
+});
+
+router.post("/update-adoption", async (req, res) => {
+    const { PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber } = req.body;
+    const updateResult = await appService.updateAdoption(
+        PetMicrochipID,
+        AdoptionDate,
+        ClientID,
+        CenterLicenseNumber
+    );
+
+    if (updateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
 // // Demotable, not used in app but here for reference
 // router.post("/update-name-demotable", async (req, res) => {
 //     const { oldName, newName } = req.body;

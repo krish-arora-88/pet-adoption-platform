@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pet Adoption Platform</title>
+    <title>Pet Adoption Platform - Manage Adoptions</title>
     <script src="../scripts/scripts.js"></script>
     <link rel="stylesheet" href="../styles/styles.css">
     <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
@@ -14,33 +14,95 @@
     <a href="/">
         <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
     </a>
-    <h1>Manage Your Adoptions</h1>
-    <table id="adoption_table" class="tables-style" border="">
-        <thead>
-            <tr>
-                <th>Adoption ID</th>
-                <th>Pet Name</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            <!-- Example adoption records -->
-            <tr>
-                <td>101</td>
-                <td>Buddy</td>
-                <td>Pending</td>
-                <td><button>Cancel Adoption</button></td>
-            </tr>
-            <tr>
-                <td>102</td>
-                <td>Luna</td>
-                <td>Approved</td>
-                <td><button>View Details</button></td>
-            </tr>
-        </tbody>
-    </table>
-    <p><a href="../index.html">Return Home</a></p>
+    <h1>Manage Adoptions</h1>
+
+    <!-- Current Adoptions Section -->
+    <section class="adoption-section">
+        <h2>Current Adoptions</h2>
+        <div id="resetAdoptionResultMsg" class="message"></div>
+        <button id="resetAdoptionTable" class="action-button">Reset Adoption Table</button>
+        <table id="adoption_table" class="tables-style" border="1">
+            <thead>
+                <tr>
+                    <th>PetMicrochipID</th>
+                    <th>AdoptionDate</th>
+                    <th>ClientID</th>
+                    <th>CenterLicenseNumber</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Adoption records will be populated here dynamically -->
+            </tbody>
+        </table>
+    </section>
+
+    <!-- New Adoption Form Section -->
+    <section class="adoption-section">
+        <h2>Register New Adoption</h2>
+        <form id="new_adoption">
+            <div class="form-group">
+                <label for="petMicrochipID">Pet Microchip ID:</label>
+                <input type="number" id="petMicrochipID" name="petMicrochipID" required>
+            </div>
+            <div class="form-group">
+                <label for="adoptionDate">Adoption Date (YYYYMMDD):</label>
+                <input type="text" id="adoptionDate" name="adoptionDate" placeholder="YYYYMMDD" pattern="[0-9]{8}"
+                    required>
+            </div>
+            <div class="form-group">
+                <label for="clientID">Client ID:</label>
+                <input type="number" id="clientID" name="clientID" required>
+            </div>
+            <div class="form-group">
+                <label for="centerLicenseNumber">Center License Number:</label>
+                <input type="number" id="centerLicenseNumber" name="centerLicenseNumber" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="submit-button">Register Adoption</button>
+            </div>
+            <div id="new_adoption_message" class="message"></div>
+        </form>
+    </section>
+
+    <!-- Update Adoption Form Section -->
+    <section class="adoption-section">
+        <h2>Update Adoption Details</h2>
+        <form id="adoption_update">
+            <div class="form-group">
+                <label for="petMicrochipID_update">Pet Microchip ID:</label>
+                <input type="number" id="petMicrochipID_update" name="petMicrochipID_update" required>
+                <small>Enter the Pet Microchip ID of the adoption you want to update</small>
+            </div>
+            <div class="form-group">
+                <label for="adoptionDate_update">New Adoption Date (YYYYMMDD):</label>
+                <input type="text" id="adoptionDate_update" name="adoptionDate_update" placeholder="YYYYMMDD"
+                    pattern="[0-9]{8}" required>
+            </div>
+            <div class="form-group">
+                <label for="clientID_update">New Client ID:</label>
+                <input type="number" id="clientID_update" name="clientID_update" required>
+            </div>
+            <div class="form-group">
+                <label for="centerLicenseNumber_update">New Center License Number:</label>
+                <input type="number" id="centerLicenseNumber_update" name="centerLicenseNumber_update" required>
+            </div>
+            <div class="form-group">
+                <button type="submit" class="submit-button">Update Adoption</button>
+            </div>
+            <div id="adoption_update_status" class="message"></div>
+        </form>
+    </section>
+
+    <!-- Navigation Links -->
+    <section class="navigation">
+        <h2>Navigation</h2>
+        <ul>
+            <li><a href="../index.html">Return Home</a></li>
+            <li><a href="pets.html">Manage Pets</a></li>
+            <li><a href="clients.html">Manage Clients</a></li>
+            <li><a href="centers.html">Manage Adoption Centers</a></li>
+        </ul>
+    </section>
 </body>
 
 </html>
