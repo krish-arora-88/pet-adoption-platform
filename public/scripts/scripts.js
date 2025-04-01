@@ -47,7 +47,6 @@ window.onload = function () {
     //adoption centre registration
 
     if (document.getElementById("adoption_center_table")) {
-        // initializeAdoptionCenterTable();
         fetchAndDisplayACTable();
     }
     if (document.getElementById("new_adoption_center")) {
@@ -469,6 +468,11 @@ async function fetchAndDisplayVetTable() {
         console.error("Error fetching vet table data:", error);
     }
 }
+
+// ======================================================================
+// AdoptionCenter(CenterLicenseNumber NUMBER(10) PRIMARY KEY,
+// CenterName VARCHAR2(100), Address VARCHAR2(100), AnimalCapacity NUMBER(10))
+// ======================================================================
 
 async function fetchAndDisplayACTable() {
     const tableElement = document.getElementById('adoption_center_table');
