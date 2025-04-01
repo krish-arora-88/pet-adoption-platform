@@ -114,7 +114,7 @@ async function initiateNewPet() {
     });
 }
 
-async function insertNewPet(MicrochipID, Name, Age, Breed, Gender) {
+async function insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName) {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
             `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender, :SpeciesName)`,
