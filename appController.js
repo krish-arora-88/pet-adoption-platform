@@ -36,8 +36,8 @@ router.post("/initiateNewPet", async (req, res) => {
 });
 
 router.post("/insert-new-pet", async (req, res) => {
-    const { MicrochipID, Name, Age, Breed, Gender } = req.body;
-    const insertResult = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender);
+    const { MicrochipID, Name, Age, Breed, Gender, SpeciesName } = req.body;
+    const insertResult = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName);
     if (insertResult) {
         res.json({ success: true });
     } else {
@@ -180,6 +180,55 @@ router.post("/update-adoption-center", async (req, res) => {
         Address,
         AnimalCapacity
     );
+    if (updateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.get('/adoption-table', async (req, res) => {
+    const tableContent = await appService.fetchAdoptionTableFromDb();
+    res.json({ data: tableContent });
+});
+
+router.post("/initiateNewAdoption", async (req, res) => {
+    const initiateResult = await appService.initiateNewAdoption();
+    if (initiateResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({ success: false });
+    }
+});
+
+router.post("/insert-new-adoption", async (req, res) => {
+    const { PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber } = req.body;
+    const insertResult = await appService.insertNewAdoption(
+        PetMicrochipID,
+        AdoptionDate,
+        ClientID,
+        CenterLicenseNumber
+    );
+
+    if (insertResult) {
+        res.json({ success: true });
+    } else {
+        res.status(500).json({
+            success: false,
+            message: "Failed to create adoption record"
+        });
+    }
+});
+
+router.post("/update-adoption", async (req, res) => {
+    const { PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber } = req.body;
+    const updateResult = await appService.updateAdoption(
+        PetMicrochipID,
+        AdoptionDate,
+        ClientID,
+        CenterLicenseNumber
+    );
+
     if (updateResult) {
         res.json({ success: true });
     } else {

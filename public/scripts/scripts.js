@@ -73,7 +73,6 @@ window.onload = function () {
 
     if (document.getElementById("resetSpeciesTable")) {
         document.getElementById("resetSpeciesTable").addEventListener("click", resetSpeciesTable);
-    
     }
 
     // Insurance Policies
@@ -104,6 +103,23 @@ window.onload = function () {
         fetchAndDisplayMedicalRecordTable();
     }
     
+    // Adoption Management
+    if (document.getElementById("adoption_table")) {
+        fetchAndDisplayAdoptionTable();
+    }
+
+    if (document.getElementById("new_adoption")) {
+        document.getElementById("new_adoption").addEventListener("submit", insertNewAdoption);
+    }
+
+    if (document.getElementById("adoption_update")) {
+        document.getElementById("adoption_update").addEventListener("submit", updateAdoption);
+    }
+
+    if (document.getElementById("resetAdoptionTable")) {
+        document.getElementById("resetAdoptionTable").addEventListener("click", initializeAdoptionTable);
+    }
+
 };
 
 async function checkDbConnection() {
@@ -124,7 +140,7 @@ async function checkDbConnection() {
 }
 
 // ======================================================================
-// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
+// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender, SpeciesName) ===========
 // ======================================================================
 
 async function insertNewPet(event) {
@@ -602,7 +618,7 @@ async function initializeAdoptionCenterTable() {
 // ===========================================================================================
 
 async function handleInsertSpecies(event) {
-    event.preventDefault(); 
+    event.preventDefault();
 
     const speciesName = document.getElementById("speciesName").value;
     const housingSpace = document.getElementById("housingSpace").value;
@@ -681,7 +697,7 @@ async function resetSpeciesTable() {
     } catch (error) {
         console.error("Error resetting species table:", error);
     }
-} 
+}
 
 // populates speciesSelect with species for inserting new pets
 
@@ -870,5 +886,105 @@ async function resetMedicalRecordTable() {
         }
     } catch (error) {
         console.error("Error resetting medical record table:", error);
+// Adoption
+
+async function fetchAndDisplayAdoptionTable() {
+    const tableElement = document.getElementById('adoption_table');
+    if (!tableElement) return;
+    const tableBody = tableElement.querySelector('tbody');
+    try {
+        const response = await fetch('/adoption-table', { method: 'GET' });
+        const responseData = await response.json();
+        const adoptionTableContent = responseData.data;
+        // Clear old data
+        if (tableBody) tableBody.innerHTML = '';
+        // Populate table with new data
+        adoptionTableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error fetching adoption table data:", error);
+    }
+}
+
+async function insertNewAdoption(event) {
+    event.preventDefault();
+
+    const petMicrochipID = document.getElementById("petMicrochipID").value;
+    const adoptionDate = document.getElementById("adoptionDate").value;
+    const clientID = document.getElementById("clientID").value;
+    const centerLicenseNumber = document.getElementById("centerLicenseNumber").value;
+
+    const response = await fetch("/insert-new-adoption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            PetMicrochipID: petMicrochipID,
+            AdoptionDate: adoptionDate,
+            ClientID: clientID,
+            CenterLicenseNumber: centerLicenseNumber
+        })
+    });
+
+    const responseData = await response.json();
+    const messageElement = document.getElementById("new_adoption_message");
+
+    if (responseData.success) {
+        if (messageElement) {
+            messageElement.textContent = "Adoption record added successfully!";
+        }
+        fetchAndDisplayAdoptionTable();
+    } else {
+        if (messageElement) messageElement.textContent = "Error occurred while adding the adoption record.";
+    }
+}
+
+async function updateAdoption(event) {
+    event.preventDefault();
+
+    const petMicrochipID = document.getElementById("petMicrochipID_update").value;
+    const adoptionDate = document.getElementById("adoptionDate_update").value;
+    const clientID = document.getElementById("clientID_update").value;
+    const centerLicenseNumber = document.getElementById("centerLicenseNumber_update").value;
+
+    const response = await fetch("/update-adoption", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            PetMicrochipID: petMicrochipID,
+            AdoptionDate: adoptionDate,
+            ClientID: clientID,
+            CenterLicenseNumber: centerLicenseNumber
+        })
+    });
+
+    const responseData = await response.json();
+    const updateStatusElem = document.getElementById("adoption_update_status");
+
+    if (responseData.success) {
+        updateStatusElem.textContent = "Adoption record updated successfully!";
+        fetchAndDisplayAdoptionTable();
+    } else {
+        updateStatusElem.textContent = "Error updating adoption record.";
+    }
+}
+
+async function initializeAdoptionTable() {
+    try {
+        const response = await fetch("/initiateNewAdoption", { method: 'POST' });
+        const responseData = await response.json();
+        if (responseData.success) {
+            const messageElement = document.getElementById('resetAdoptionResultMsg');
+            if (messageElement) messageElement.textContent = "Adoption table initiated successfully!";
+            fetchAndDisplayAdoptionTable();
+        } else {
+            alert("Error initiating adoption table!");
+        }
+    } catch (error) {
+        console.error("Error resetting adoption table:", error);
     }
 }
