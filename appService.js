@@ -493,7 +493,7 @@ async function initiateMedicalRecordTable() {
         try {
             await connection.execute(`DROP TABLE MedicalRecord`);
         } catch (error) {
-            console.log('MedicalRecord table did not exist.')
+            console.log('MedicalRecord table did not exist, proceeding to create...');
         }
         const result = await connection.execute(`
             CREATE TABLE MedicalRecord (
@@ -510,7 +510,7 @@ async function initiateMedicalRecordTable() {
         `);
         return true;
     }).catch((error) => {
-        console.error("Error creating Species table:", error);
+        console.error("Error creating MedicalRecord table:", error);
         return false;
     });
 }
@@ -686,7 +686,7 @@ module.exports = {
     initiateSpeciesTable,
     insertNewSpecies,
     fetchSpeciesList,
-    resetSpeciesTable,
+    clearSpeciesTable,
     initiateMedicalRecordTable,
     insertNewMedicalRecord,
     fetchMedicalRecords,

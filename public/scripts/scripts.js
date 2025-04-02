@@ -892,12 +892,12 @@ async function fetchAndDisplayMedicalRecordTable() {
             const cellHealth = row.insertCell(4);
             const cellVetNotes = row.insertCell(5);
 
-            cellPetID.textContent = record[0];
-            cellRecordID.textContent = record[1];
-            cellInsurance.textContent = record[2];
-            cellVaccination.textContent = record[3];
-            cellHealth.textContent = record[4];
-            cellVetNotes.textContent = record[5];
+            cellPetID.textContent = record.PETMICROCHIPID;
+            cellRecordID.textContent = record.RECORDID;
+            cellInsurance.textContent = record.INSURANCEPOLICYNUMBER;
+            cellVaccination.textContent = record.VACCINATIONSTATUS;
+            cellHealth.textContent = record.HEALTHCONDITION;
+            cellVetNotes.textContent = record.VETNOTES;
         });
 
     } catch (error) {
