@@ -112,7 +112,7 @@ async function checkDbConnection() {
 }
 
 // ======================================================================
-// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
+// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender, SpeciesName) ===========
 // ======================================================================
 
 async function insertNewPet(event) {

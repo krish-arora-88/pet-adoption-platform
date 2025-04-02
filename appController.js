@@ -36,8 +36,8 @@ router.post("/initiateNewPet", async (req, res) => {
 });
 
 router.post("/insert-new-pet", async (req, res) => {
-    const { MicrochipID, Name, Age, Breed, Gender } = req.body;
-    const insertResult = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender);
+    const { MicrochipID, Name, Age, Breed, Gender, SpeciesName } = req.body;
+    const insertResult = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName);
     if (insertResult) {
         res.json({ success: true });
     } else {
