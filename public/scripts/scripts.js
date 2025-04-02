@@ -731,6 +731,22 @@ async function populateSpeciesDropdown() {
     }
 }
 
+async function resetSpeciesTable() {
+    try {
+        const response = await fetch('/clearSpeciesTable', { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            alert("Species table cleared.");
+            fetchAndDisplaySpeciesTable();
+        } else {
+            alert("Error clearing species table.");
+        }
+    } catch (error) {
+        console.error("Error clearing species table:", error);
+    }
+}
+
+
 
 // =========================================================================================================================
 // ======== InsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) =========

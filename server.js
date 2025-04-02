@@ -59,6 +59,27 @@ app.post('/insert-new-species', async (req, res) => {
     }
 });
 
+app.post('/initiateNewSpecies', async (req, res) => {
+  try {
+      const success = await db.initiateSpeciesTable();
+      res.json({ success });
+  } catch (error) {
+      console.error("Error initiating species table:", error);
+      res.status(500).json({ error: "Error initiating species table" });
+  }
+});
+
+app.post('/clearSpeciesTable', async (req, res) => {
+  try {
+    const success = await db.clearSpeciesTable(); // Ensure you export clearSpeciesTable in your appService
+    res.json({ success });
+  } catch (error) {
+    console.error("Error clearing species table:", error);
+    res.status(500).json({ error: "Error clearing species table" });
+  }
+});
+
+
 app.post('/insert-new-pet', async (req, res) => {
     try {
         console.log("Request body:", req.body);

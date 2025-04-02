@@ -92,7 +92,7 @@ async function fetchPetTableFromDb() {
 async function initiateNewPet() {
     return await withOracleDB(async (connection) => {
         try {
-            await connection.execute(`DROP TABLE Pet`);
+            await connection.execute(`DROP TABLE Pet CASCADE CONSTRAINTS`);
         } catch (err) {
             console.log('Table might not exist, proceeding to create...');
         }
@@ -403,6 +403,22 @@ async function fetchSpeciesList() {
     })
 }
 
+async function clearSpeciesTable() {
+    return await withOracleDB(async (connection) => {
+      try {
+        await connection.execute(`DELETE TABLE Species`);
+        console.log("Species table cleared successfully.");
+      } catch (error) {
+        console.error("Error clearing Species table:", error);
+        return false;
+      }
+      return true;
+    }).catch((error) => {
+      console.error("Error in clearSpeciesTable:", error);
+      return false;
+    });
+  }
+
 // ========================================================================================================
 // ============ Insurance Policies (InsurancePolicyNumber, PolicyHolderName, PolicyDetails) ===============
 // ========================================================================================================
@@ -670,6 +686,7 @@ module.exports = {
     initiateSpeciesTable,
     insertNewSpecies,
     fetchSpeciesList,
+    resetSpeciesTable,
     initiateMedicalRecordTable,
     insertNewMedicalRecord,
     fetchMedicalRecords,
