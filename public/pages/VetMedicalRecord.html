@@ -10,18 +10,38 @@
 </head>
 
 <body>
-    <a href="/">
-        <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
-    </a>
-    <div>
-        <h1>View Medical Record</h1>
-    </div>
-    <div>
-        <h1>Update Medical Record</h1>
-    </div>
 
+    <form id="medicalRecordForm">
+        <input type="text" id="petMicrochipID" placeholder="Pet Microchip ID" required />
+        <input type="text" id="recordID" placeholder="Record ID" required />
+        <input type="text" id="insurancePolicyNumber" placeholder="Insurance Policy Number" required />
+        <input type="text" id="vaccinationStatus" placeholder="Vaccination Status" required />
+        <input type="text" id="healthCondition" placeholder="Health Condition" />
+        <input type="text" id="vetNotes" placeholder="Vet Notes" />
+        <button type="submit">Add Medical Record</button>
+    </form>
+
+    <table id="medicalRecordTable" border="1">
+        <thead>
+            <tr>
+                <th>Pet Microchip ID</th>
+                <th>Record ID</th>
+                <th>Insurance Policy #</th>
+                <th>Vaccination Status</th>
+                <th>Health Condition</th>
+                <th>Vet Notes</th>
+            </tr>
+        </thead>
+        <tbody id="medicalRecordTableBody">
+
+        </tbody>
+    </table>
+
+    <button id="resetMedicalRecordTable">Reset Medical Record Table</button>
 
     <p><a href="../index.html">Return Home</a></p>
+
+    <script src ="../scripts/scripts.js"></script>
 </body>
 
 </html>

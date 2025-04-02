@@ -103,7 +103,7 @@ async function initiateNewPet() {
                 Name VARCHAR2(50),
                 Age NUMBER(3),
                 Breed VARCHAR2(50) NOT NULL,
-                Gender CHAR(1) NOT NULL
+                Gender CHAR(1) NOT NULL,
                 SpeciesName VARCHAR2(50),
                 CONSTRAINT fk_species FOREIGN KEY (SpeciesName) REFERENCES Species(speciesName)
                 )
@@ -117,7 +117,7 @@ async function initiateNewPet() {
 async function insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName) {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
-            `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender, :SpeciesName)`,
+            `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender, SpeciesName) VALUES (:MicrochipID, :Name, :Age, :Breed, :Gender, :SpeciesName)`,
             [MicrochipID, Name, Age, Breed, Gender, SpeciesName],
             { autoCommit: true }
         );
@@ -403,6 +403,132 @@ async function fetchSpeciesList() {
     })
 }
 
+// ========================================================================================================
+// ============ Insurance Policies (InsurancePolicyNumber, PolicyHolderName, PolicyDetails) ===============
+// ========================================================================================================
+
+async function initiateInsurancePolicyTable() {
+    return await withOracleDB(async (connection) => {
+      try {
+        await connection.execute(`DROP TABLE InsurancePolicy`);
+      } catch (error) {
+        console.log('InsurancePolicy table did not exist, proceeding to create...');
+      }
+      const result = await connection.execute(`
+        CREATE TABLE InsurancePolicy (
+            InsurancePolicyNumber NUMBER(20) PRIMARY KEY,
+            PolicyLevel VARCHAR2(50),
+            CoverageAmount NUMBER NOT NULL,
+            InsuranceStartDate CHAR(8),
+            InsuranceExpiration CHAR(8)
+        )
+      `);
+      return true;
+    }).catch((error) => {
+      console.error("Error creating InsurancePolicy table:", error);
+      return false;
+    });
+  }
+  
+  async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) {
+    return await withOracleDB(async (connection) => {
+      const result = await connection.execute(
+        `INSERT INTO InsurancePolicy (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
+        VALUES (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
+        [InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration],
+        { autoCommit: true }
+      );
+      return result.rowsAffected && result.rowsAffected > 0;
+    }).catch((error) => {
+      console.error("Error inserting new insurance policy:", error);
+      return false;
+    });
+  }
+  
+  async function fetchInsurancePolicyList() {
+    return await withOracleDB(async (connection) => {
+      const result = await connection.execute(
+        `SELECT InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration
+        FROM InsurancePolicy`,
+        [],
+        { outFormat: oracledb.OUT_FORMAT_OBJECT }
+      );
+      return result.rows;
+    }).catch((error) => {
+      console.error("Error fetching insurance policies:", error);
+      return [];
+    });
+  }
+
+
+// ======================================================================================================================================
+// ============ MedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) ============
+// ======================================================================================================================================
+
+async function initiateMedicalRecordTable() {
+    return await withOracleDB(async (connection) => {
+        try {
+            await connection.execute(`DROP TABLE MedicalRecord`);
+        } catch (error) {
+            console.log('MedicalRecord table did not exist.')
+        }
+        const result = await connection.execute(`
+            CREATE TABLE MedicalRecord (
+                PetMicrochipID NUMBER(15),
+                InsurancePolicyNumber NUMBER(20),
+                RecordID NUMBER(10),
+                VaccinationStatus CHAR(1),
+                HealthCondition VARCHAR2(200),
+                VetNotes VARCHAR2(500),
+                CONSTRAINT pk_medicalRecord PRIMARY KEY (PetMicrochipID, InsurancePolicyNumber),
+                CONSTRAINT fk_medicalRecordPet FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
+                CONSTRAINT fk_medicalRecordInsurance FOREIGN KEY (InsurancePolicyNumber) REFERENCES InsurancePolicy(InsurancePolicyNumber)
+            )
+        `);
+        return true;
+    }).catch((error) => {
+        console.error("Error creating Species table:", error);
+        return false;
+    });
+}
+
+async function insertNewMedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `INSERT INTO MedicalRecord
+            (PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes)
+            VALUES (:PetMicrochipID, :RecordID, :InsurancePolicyNumber, :VaccinationStatus, :HealthCondition, :VetNotes)`,
+            [PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
+    }).catch((error) => {
+        console.error("Error inserting new medical record:", error);
+        return false;
+    });
+}
+
+async function fetchMedicalRecords() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `SELECT PetMicrochipID,
+            RecordID,
+            InsurancePolicyNumber,
+            VaccinationStatus,
+            HealthCondition,
+            VetNotes
+            FROM MedicalRecord`,
+            [],
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+            );
+        return result.rows;
+    }).catch((error) => {
+        console.error("Error fetching medical records:", error);
+        return[];
+    })
+}
+
+
 module.exports = {
     testOracleConnection,
     // initiateDemotable, 
@@ -426,7 +552,13 @@ module.exports = {
     initiateNewAdoptionCenter,
     initiateSpeciesTable,
     insertNewSpecies,
-    fetchSpeciesList
+    fetchSpeciesList,
+    initiateMedicalRecordTable,
+    insertNewMedicalRecord,
+    fetchMedicalRecords,
+    initiateInsurancePolicyTable,
+    insertNewInsurancePolicy,
+    fetchInsurancePolicyList
 
 };
 

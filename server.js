@@ -58,3 +58,92 @@ app.post('/insert-new-species', async (req, res) => {
         res.status(500).json({ error: 'Error fetching species' });
     }
 });
+
+app.post('/insert-new-pet', async (req, res) => {
+    try {
+        console.log("Request body:", req.body);
+        const { MicrochipID, Name, Age, Breed, Gender, SpeciesName } = req.body;
+        const success = await db.insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName);
+        res.json({ success });
+    } catch (error) {
+        console.error('Error inserting new pet:', error);
+        res.status(500).json({ error: 'Error inserting new pet' });
+    }
+});
+
+// Insurance Policy Routing
+
+app.post('/initiateNewInsurancePolicy', async (req, res) => {
+    try {
+      const success = await db.initiateInsurancePolicyTable();
+      res.json({ success });
+    } catch (error) {
+      console.error("Error initiating insurance policy table:", error);
+      res.status(500).json({ error: "Error initiating insurance policy table" });
+    }
+  });  
+  
+app.post('/insert-new-insurance-policy', async (req, res) => {
+    try {
+      console.log("Insurance Policy Insert Request Body:", req.body);
+      const { InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration } = req.body;
+      const success = await db.insertNewInsurancePolicy(
+        InsurancePolicyNumber,
+        PolicyLevel,
+        CoverageAmount,
+        InsuranceStartDate,
+        InsuranceExpiration
+      );
+      res.json({ success });
+    } catch (error) {
+      console.error("Error inserting new insurance policy:", error);
+      res.status(500).json({ error: "Error inserting new insurance policy" });
+    }
+  });
+  
+  
+app.get('/insurance-policies', async (req, res) => {
+    try {
+      const rows = await db.fetchInsurancePolicyList();
+      res.json(rows);
+    } catch (error) {
+      console.error("Error fetching insurance policies:", error);
+      res.status(500).json({ error: "Error fetching insurance policies" });
+    }
+  });
+  
+
+// Medical Record Routing
+
+app.post('/initiateNewMedicalRecord', async (req, res) => {
+    try {
+      const success = await db.initiateMedicalRecordTable();
+      res.json({ success });
+    } catch (error) {
+      console.error("Error initiating medical record table:", error);
+      res.status(500).json({ error: "Error initiating medical record table" });
+    }
+  });
+
+  app.post('/insert-new-medical-record', async (req, res) => {
+    try {
+      console.log("Request body:", req.body);
+      const { PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes } = req.body;
+      const success = await db.insertNewMedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes);
+      res.json({ success });
+    } catch (error) {
+      console.error("Error inserting new medical record:", error);
+      res.status(500).json({ error: "Error inserting new medical record" });
+    }
+  });
+
+  app.get('/medical-records', async (req, res) => {
+    try {
+      const rows = await db.fetchMedicalRecords();
+      res.json(rows);
+    } catch (error) {
+      console.error("Error fetching medical records:", error);
+      res.status(500).json({ error: "Error fetching medical records" });
+    }
+  });
+  

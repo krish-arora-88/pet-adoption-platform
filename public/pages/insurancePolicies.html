@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manage Insurance Policies</title>
+  <link rel="stylesheet" href="../styles/styles.css" />
+</head>
+<body>
+  <h1>Insurance Policies Management</h1>
+
+  <form id="insuranceForm">
+    <input type="text" id="insurancePolicyNumber" placeholder="Insurance Policy Number" required />
+    <input type="text" id="policyLevel" placeholder="Policy Level" required />
+    <input type="number" id="coverageAmount" placeholder="Coverage Amount" required />
+    <input type="text" id="insuranceStartDate" placeholder="Start Date (YYYY/MM/DD)" required />
+    <input type="text" id="insuranceExpiration" placeholder="Expiration Date (YYYY/MM/DD)" required />
+    <button type="submit">Add Insurance Policy</button>
+  </form>
+
+  <p id="insurance_form_message"></p>
+
+  <table id="insuranceTable" border="1">
+    <thead>
+      <tr>
+        <th>Policy Number</th>
+        <th>Policy Level</th>
+        <th>Coverage Amount</th>
+        <th>Start Date</th>
+        <th>Expiration Date</th>
+      </tr>
+    </thead>
+    <tbody id="insuranceTableBody">
+
+    </tbody>
+  </table>
+
+  <button id="resetInsuranceTable">Reset Insurance Table</button>
+
+  <p><a href="../index.html">Return Home</a></p>
+
+  <script src="../scripts/scripts.js"></script>
+</body>
+</html>
