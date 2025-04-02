@@ -75,6 +75,10 @@ window.onload = function () {
         document.getElementById("resetSpeciesTable").addEventListener("click", resetSpeciesTable);
     }
 
+    if (document.getElementById("speciesTable")) {
+        fetchAndDisplaySpeciesTable();
+    }
+
     // Insurance Policies
 
     if (document.getElementById("insuranceForm")) {
@@ -102,7 +106,7 @@ window.onload = function () {
     if (document.getElementById("medicalRecordTable")) {
         fetchAndDisplayMedicalRecordTable();
     }
-    
+
     // Adoption Management
     if (document.getElementById("adoption_table")) {
         fetchAndDisplayAdoptionTable();
@@ -783,7 +787,7 @@ async function insertNewInsurancePolicy(event) {
         const cellExpiration = row.insertCell(4);
   
         cellNumber.textContent = policy.InsurancePolicyNumber || policy.INSURANCEPOLICYNUMBER;
-        cellLevel.textContent = policy.PolicyLevel || policy.LEVEL;
+        cellLevel.textContent = policy.PolicyLevel || policy.POLICYLEVEL;
         cellCoverage.textContent = policy.CoverageAmount || policy.COVERAGEAMOUNT;
         cellStart.textContent = policy.InsuranceStartDate || policy.INSURANCESTARTDATE;
         cellExpiration.textContent = policy.InsuranceExpiration || policy.INSURANCEEXPIRATION;
@@ -791,21 +795,31 @@ async function insertNewInsurancePolicy(event) {
     } catch (error) {
       console.error("Error fetching insurance policies:", error);
     }
-  }
-  
-  async function resetInsuranceTable() {
+}
+
+async function resetInsuranceTable() {
     try {
-      const response = await fetch('/initiateNewInsurancePolicy', { method: 'POST' });
-      const data = await response.json();
-      if (data.success) {
-        fetchAndDisplayInsurancePolicies();
-      } else {
-        alert("Error resetting insurance table!");
-      }
+        const response = await fetch('/initiateNewInsurancePolicy', { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+            fetchAndDisplayInsurancePolicies();
+        } else {
+            alert("Error resetting insurance table!");
+        }
     } catch (error) {
-      console.error("Error resetting insurance table:", error);
+        console.error("Error resetting insurance table:", error);
     }
-  }
+}
+
+  async function initializeInsurancePolicyTable() {
+    try {
+        const response = await fetch('/initiateNewInsurancePolicy', { method: 'POST' });
+        const data = await response.json();
+        console.log("InsurancePolicy table initialization result:", data.success);
+    } catch (error) {
+        console.error("Error initializing InsurancePolicy table:", error);
+    }
+}
   
 
 // ======================================================================================================================================
@@ -886,6 +900,19 @@ async function resetMedicalRecordTable() {
         }
     } catch (error) {
         console.error("Error resetting medical record table:", error);
+    }
+}
+
+async function initializeMedicalRecordTable() {
+    try {
+        const response = await fetch('/initiateNewMedicalRecord', { method: 'POST' });
+        const data = await response.json();
+        console.log("MedicalRecord table initialization result:", data.success);
+    } catch (error) {
+        console.error("Error initializing MedicalRecord table:", error);
+    }
+}
+
 // Adoption
 
 async function fetchAndDisplayAdoptionTable() {

@@ -414,15 +414,16 @@ async function initiateInsurancePolicyTable() {
       } catch (error) {
         console.log('InsurancePolicy table did not exist, proceeding to create...');
       }
-      const result = await connection.execute(`
+      await connection.execute(`
         CREATE TABLE InsurancePolicy (
             InsurancePolicyNumber NUMBER(20) PRIMARY KEY,
             PolicyLevel VARCHAR2(50),
             CoverageAmount NUMBER NOT NULL,
-            InsuranceStartDate CHAR(8),
-            InsuranceExpiration CHAR(8)
+            InsuranceStartDate VARCHAR2(10) CHECK (REGEXP_LIKE(InsuranceStartDate, '^[0-9]{4}/[0-9]{2}/[0-9]{2}$')),
+            InsuranceExpiration VARCHAR2(10) CHECK (REGEXP_LIKE(InsuranceExpiration, '^[0-9]{4}/[0-9]{2}/[0-9]{2}$'))
         )
       `);
+      console.log("InsurancePolicy table created successfully.");
       return true;
     }).catch((error) => {
       console.error("Error creating InsurancePolicy table:", error);
@@ -430,11 +431,13 @@ async function initiateInsurancePolicyTable() {
     });
   }
   
-  async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) {
+async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) {
     return await withOracleDB(async (connection) => {
       const result = await connection.execute(
-        `INSERT INTO InsurancePolicy (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
-        VALUES (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
+        `INSERT INTO InsurancePolicy 
+           (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
+         VALUES 
+           (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
         [InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration],
         { autoCommit: true }
       );
@@ -443,13 +446,18 @@ async function initiateInsurancePolicyTable() {
       console.error("Error inserting new insurance policy:", error);
       return false;
     });
-  }
+}
   
-  async function fetchInsurancePolicyList() {
+async function fetchInsurancePolicyList() {
     return await withOracleDB(async (connection) => {
       const result = await connection.execute(
-        `SELECT InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration
-        FROM InsurancePolicy`,
+        `SELECT 
+           InsurancePolicyNumber, 
+           PolicyLevel, 
+           CoverageAmount,
+           TO_CHAR(InsuranceStartDate, 'YYYY/MM/DD') AS "InsuranceStartDate",
+           TO_CHAR(InsuranceExpiration, 'YYYY/MM/DD') AS "InsuranceExpiration"
+         FROM InsurancePolicy`,
         [],
         { outFormat: oracledb.OUT_FORMAT_OBJECT }
       );
@@ -458,8 +466,7 @@ async function initiateInsurancePolicyTable() {
       console.error("Error fetching insurance policies:", error);
       return [];
     });
-  }
-
+}
 
 // ======================================================================================================================================
 // ============ MedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) ============
@@ -488,40 +495,17 @@ async function initiateMedicalRecordTable() {
         return true;
     }).catch((error) => {
         console.error("Error creating Species table:", error);
+        return false;
+    });
+}
+
+
 async function fetchAdoptionTableFromDb() {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute('SELECT * FROM Adoption');
         return result.rows;
     }).catch(() => {
         return [];
-    });
-}
-
-async function initiateNewAdoption() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE Adoption`);
-        } catch (err) {
-            console.log('Table might not exist, proceeding to create...');
-        }
-
-        const result = await connection.execute(`
-            CREATE TABLE Adoption (
-                PetMicrochipID NUMBER(15),
-                AdoptionDate DATE,
-                ClientID NUMBER(10),
-                CenterLicenseNumber NUMBER(10),
-                PRIMARY KEY (PetMicrochipID),
-                FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
-                FOREIGN KEY (ClientID) REFERENCES Client(ClientID),
-                FOREIGN KEY (CenterLicenseNumber) REFERENCES AdoptionCenter(CenterLicenseNumber)
-            )
-        `);
-
-        return true;
-    }).catch((err) => {
-        console.error("Error creating Adoption table:", err);
-        return false;
     });
 }
 
@@ -559,6 +543,36 @@ async function fetchMedicalRecords() {
         console.error("Error fetching medical records:", error);
         return[];
     })
+}
+
+// Adoption
+
+async function initiateNewAdoption() {
+    return await withOracleDB(async (connection) => {
+        try {
+            await connection.execute(`DROP TABLE Adoption`);
+        } catch (err) {
+            console.log('Table might not exist, proceeding to create...');
+        }
+
+        const result = await connection.execute(`
+            CREATE TABLE Adoption (
+                PetMicrochipID NUMBER(15),
+                AdoptionDate DATE,
+                ClientID NUMBER(10),
+                CenterLicenseNumber NUMBER(10),
+                PRIMARY KEY (PetMicrochipID),
+                FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
+                FOREIGN KEY (ClientID) REFERENCES Client(ClientID),
+                FOREIGN KEY (CenterLicenseNumber) REFERENCES AdoptionCenter(CenterLicenseNumber)
+            )
+        `);
+
+        return true;
+    }).catch((err) => {
+        console.error("Error creating Adoption table:", err);
+        return false;
+    });
 }
 
 async function insertNewAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) {
@@ -668,4 +682,3 @@ module.exports = {
     initiateNewAdoption
 
 };
-
