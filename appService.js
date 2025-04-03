@@ -134,8 +134,10 @@ async function initiateNewPet() {
                 Breed VARCHAR2(50) NOT NULL,
                 Gender CHAR(1) NOT NULL,
                 SpeciesName VARCHAR2(50),
-                CONSTRAINT fk_species FOREIGN KEY (SpeciesName) REFERENCES Species(speciesName)
-                )
+                CONSTRAINT fk_species FOREIGN KEY (SpeciesName)
+                    REFERENCES Species(speciesName)
+                    ON DELETE CASCADE
+            )
         `);
         return true;
     }).catch(() => {
@@ -458,6 +460,45 @@ async function clearSpeciesTable() {
     });
 }
 
+async function updateSpecies(speciesName, housingSpace, groomingRoutine, dietType) {
+    return await withOracleDB(async (connection) => {
+      const result = await connection.execute(
+        `UPDATE Species 
+         SET HousingSpaceRequired = :housingSpace,
+             GroomingRoutine = :groomingRoutine,
+             DietType = :dietType
+         WHERE speciesName = :speciesName`,
+        [housingSpace, groomingRoutine, dietType, speciesName],
+        { autoCommit: true }
+      );
+      return result.rowsAffected && result.rowsAffected > 0;
+    }).catch((error) => {
+      console.error("Error updating species:", error);
+      return false;
+    });
+}
+  
+async function deleteSpecies(speciesName) {
+    return await withOracleDB(async (connection) => {
+      await connection.execute(
+        `DELETE FROM Pet WHERE SpeciesName = :speciesName`,
+        [speciesName],
+        { autoCommit: true }
+      );
+      const result = await connection.execute(
+        `DELETE FROM Species WHERE speciesName = :speciesName`,
+        [speciesName],
+        { autoCommit: true }
+      );
+      return result.rowsAffected && result.rowsAffected > 0;
+    }).catch((error) => {
+      console.error("Error deleting species:", error);
+      return false;
+    });
+  }
+  
+
+
 // ========================================================================================================
 // ============ Insurance Policies (InsurancePolicyNumber, PolicyHolderName, PolicyDetails) ===============
 // ========================================================================================================
@@ -766,6 +807,8 @@ module.exports = {
     insertNewSpecies,
     fetchSpeciesList,
     clearSpeciesTable,
+    updateSpecies,
+    deleteSpecies,
     initiateMedicalRecordTable,
     insertNewMedicalRecord,
     fetchMedicalRecords,

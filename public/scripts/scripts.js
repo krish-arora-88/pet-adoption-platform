@@ -749,39 +749,55 @@ async function initializeAdoptionCenterTable() {
 
 async function handleInsertSpecies(event) {
     event.preventDefault();
-
-    const speciesName = document.getElementById("speciesName").value;
+    const speciesNameElem = document.getElementById("speciesName");
+    const speciesName = speciesNameElem.value;
     const housingSpace = document.getElementById("housingSpace").value;
     const groomingRoutine = document.getElementById("groomingRoutine").value;
     const dietType = document.getElementById("dietType").value;
-
+    const messageElem = document.getElementById("species_form_message");
+  
     try {
-        const response = await fetch('/insert-new-species', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                speciesName: speciesName,
-                housingSpace: housingSpace,
-                groomingRoutine: groomingRoutine,
-                dietType: dietType
-            })
+      let response, data;
+      if (speciesNameElem.readOnly) {
+        console.log("Update branch: updating species", speciesName, housingSpace, groomingRoutine, dietType);
+        response = await fetch('/update-species', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ speciesName, housingSpace, groomingRoutine, dietType })
         });
-
-        const data = await response.json();
-        const messageElem = document.getElementById("species_form_message");
-
+        console.log("Response from update-species:", response);
+        data = await response.json();
+        console.log("Parsed update response:", data);
         if (data.success) {
-            messageElem.textContent = "Species added successfully.";
-            fetchAndDisplaySpeciesTable();
-            populateSpeciesDropdown();
+          messageElem.textContent = "Species updated successfully.";
         } else {
-            messageElem.textContent = "Error adding species. It may already exist.";
+          messageElem.textContent = "Error updating species.";
         }
+        speciesNameElem.readOnly = false;
+        document.querySelector("#speciesForm button").textContent = "Add Species";
+      } else {
+        console.log("Insert branch: inserting species", speciesName, housingSpace, groomingRoutine, dietType);
+        response = await fetch('/insert-new-species', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ speciesName, housingSpace, groomingRoutine, dietType })
+        });
+        data = await response.json();
+        if (data.success) {
+          messageElem.textContent = "Species added successfully.";
+        } else {
+          messageElem.textContent = "Error adding species. It may already exist.";
+        }
+      }
+      await fetchAndDisplaySpeciesTable();
+      await populateSpeciesDropdown();
+      document.getElementById("speciesForm").reset();
     } catch (error) {
-        console.error("Error in handleInsertSpecies:", error);
-        document.getElementById("species_form_message").textContent = "Error adding species.";
+      console.error("Error in handleInsertSpecies:", error);
+      messageElem.textContent = "Error processing species.";
     }
-}
+  }
+  
 
 
 async function fetchAndDisplaySpeciesTable() {
@@ -801,17 +817,28 @@ async function fetchAndDisplaySpeciesTable() {
             const cellHousing = row.insertCell(1);
             const cellGrooming = row.insertCell(2);
             const cellDiet = row.insertCell(3);
-
             cellName.textContent = species.SpeciesName;
             cellHousing.textContent = species.HousingSpaceRequired;
             cellGrooming.textContent = species.GroomingRoutine;
             cellDiet.textContent = species.DietType;
-        });
 
+            const cellEdit = row.insertCell(4);
+            const editButton = document.createElement("button");
+            editButton.textContent = "Edit";
+            editButton.addEventListener("click", () => populateSpeciesForm(species));
+            cellEdit.appendChild(editButton);
+
+            const cellDelete = row.insertCell(5);
+            const deleteButton = document.createElement("button");
+            deleteButton.textContent = "Delete";
+            deleteButton.addEventListener("click", () => deleteSpeciesEntry(species.SpeciesName));
+            cellDelete.appendChild(deleteButton);
+        });
     } catch (error) {
         console.error("Error fetching species table:", error);
     }
 }
+
 
 async function resetSpeciesTable() {
     try {
@@ -872,6 +899,39 @@ async function resetSpeciesTable() {
     }
 }
 
+function populateSpeciesForm(species) {
+    document.getElementById("speciesName").value = species.SpeciesName;
+    document.getElementById("housingSpace").value = species.HousingSpaceRequired;
+    document.getElementById("groomingRoutine").value = species.GroomingRoutine;
+    document.getElementById("dietType").value = species.DietType;
+    
+    const submitButton = document.querySelector("#speciesForm button");
+    submitButton.textContent = "Update Species";
+    
+    document.getElementById("speciesName").readOnly = true; 
+}
+
+async function deleteSpeciesEntry(speciesName) {
+    try {
+        const response = await fetch('/delete-species', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ speciesName })
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert("Species deleted successfully.");
+            fetchAndDisplaySpeciesTable();
+            populateSpeciesDropdown();
+        } else {
+            alert("Error deleting species.");
+        }
+    } catch (error) {
+        console.error("Error deleting species:", error);
+        alert("Error deleting species.");
+    }
+}
+
 
 
 // =========================================================================================================================
@@ -884,8 +944,9 @@ async function insertNewInsurancePolicy(event) {
     const insurancePolicyNumber = document.getElementById("insurancePolicyNumber").value;
     const policyLevel = document.getElementById("policyLevel").value;
     const coverageAmount = document.getElementById("coverageAmount").value;
-    const insuranceStartDate = document.getElementById("insuranceStartDate").value;
-    const insuranceExpiration = document.getElementById("insuranceExpiration").value;
+    const insuranceStartDate = document.getElementById("insuranceStartDate").value.replace(/-/g, '/');
+    const insuranceExpiration = document.getElementById("insuranceExpiration").value.replace(/-/g, '/');
+
 
     const response = await fetch('/insert-new-insurance-policy', {
         method: 'POST',
