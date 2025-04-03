@@ -44,9 +44,12 @@ window.onload = function () {
     if (document.getElementById("vet_update")) {
         document.getElementById("vet_update").addEventListener("submit", updateVet);
     }
-    if (document.getElementById("vet_table")) {
-        fetchAndDisplayVetTable();
+
+    if (document.getElementById("projectVetInfo")) {
+        document.getElementById("projectVetInfo").addEventListener("submit", fetchAndDisplayVetTableProject);
     }
+
+
 
     //adoption centre registration
 
@@ -557,6 +560,55 @@ async function fetchAndDisplayVetTable() {
     }
 }
 
+async function fetchAndDisplayVetTableProject() {
+    
+    const tableBody = tableElement.getElementById('vet_table');
+
+    let checkboxes = document.getElementsByName('vetInfo');
+    let selected = ""
+    for (var i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            if (selected == "") {
+                selected += checkboxes[i]
+            } else {
+                selected += "," + checkboxes[i]
+            }
+            let header = tableBody.inserRow();
+            let headerCell = document.createElement("th");
+            headerCell.innerText=(checkboxes[i]);
+            header.appendChild(headerCell);
+        }
+    }
+
+    const tableElement = document.getElementById('projectVetInfo');
+    if (!tableElement) return;
+    
+
+    try {
+        const response = await fetch('/vet-table-project', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                selectors: selected
+            })
+        });
+
+
+        const responseData = await response.json();
+        const demotableContent = responseData.data;
+
+        if (tableBody) tableBody.innerHTML = '';
+        demotableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error fetching vet table data:", error);
+    }
+}
 // ======================================================================
 // AdoptionCenter(CenterLicenseNumber NUMBER(10) PRIMARY KEY,
 // CenterName VARCHAR2(100), Address VARCHAR2(100), AnimalCapacity NUMBER(10))

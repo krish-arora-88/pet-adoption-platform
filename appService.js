@@ -257,6 +257,16 @@ async function fetchVetTableFromDb() {
     });
 }
 
+async function fetchVetProject(selectors) {
+    return await withOracleDB(async (connection) => {
+        const text = "SELECT " + selectors + " FROM Veterinarian"
+        const result = await connection.execute('SELECT * FROM Veterinarian');
+        return result.rows;
+    }).catch(() => {
+        return [];
+    });
+}
+
 async function initiateNewVet() {
     return await withOracleDB(async (connection) => {
         try {
@@ -747,6 +757,7 @@ module.exports = {
     insertNewAdoption,
     updateAdoption,
     initiateNewAdoption,
-    fetchPetMedical
+    fetchPetMedical,
+    fetchVetProject
 
 };

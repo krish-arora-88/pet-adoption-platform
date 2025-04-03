@@ -147,6 +147,14 @@ router.post("/view-pet-medical", async (req, res) => {
 
 
 
+router.post("/vet-table-project", async (req, res) => {
+    const { selectors } = req.body;
+    const tableContent = await appService.fetchVetProject(selectors);
+    res.json({ data: tableContent });
+});
+
+
+
 // ======================================================================
 // =========== AdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity)
 // ======================================================================

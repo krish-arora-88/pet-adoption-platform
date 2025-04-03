@@ -15,14 +15,28 @@
         <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
     </a>
     <h1>Veterenarians</h1>
+    <form id = "projectVetInfo">
+        <label>View the following details</label><br>
+        <input type ="checkbox" name="vetInfo" value="VetLicenseNumber">
+        <label>Vet License Number</label>
+        <input type ="checkbox" name="vetInfo" value="Name">
+        <label>Vet Name</label>
+        <input type ="checkbox" name="vetInfo" value="ClinicName">
+        <label>Clinic Name</label>
+        <input type ="checkbox" name="vetInfo" value="ContactNumber">
+        <label>Contact Number</label>
+        <input type ="checkbox" name="vetInfo" value="EmailAddress">
+        <label>Email</label>
+        <button type="submit">View Available Vets</button>
+    </form>
     <table id="vet_table" class="tables-style">
         <thead>
             <tr>
-                <th>Vet License Number</th>
+                <!-- <th>Vet License Number</th>
                 <th>Name</th>
                 <th>Clinic Name</th>
                 <th>Contact Number</th>
-                <th>Email Address</th>
+                <th>Email Address</th> -->
             </tr>
         </thead>
         <tbody></tbody>
