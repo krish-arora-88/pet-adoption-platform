@@ -14,6 +14,10 @@ window.onload = function () {
         fetchPetTableData();
     }
 
+    if (document.getElementById("speciesFilter")) {
+        document.getElementById("speciesFilter").addEventListener("change", filterPetsBySpecies);
+    }
+
     // Client Sign Up
     if (document.getElementById("sign_up")) {
         document.getElementById("sign_up").addEventListener("submit", insertNewClient);
@@ -88,7 +92,7 @@ window.onload = function () {
     if (document.getElementById("resetInsuranceTable")) {
         document.getElementById("resetInsuranceTable").addEventListener("click", resetInsuranceTable);
     }
-      
+
     if (document.getElementById("insuranceTable")) {
         fetchAndDisplayInsurancePolicies();
     }
@@ -189,6 +193,36 @@ async function insertNewPet(event) {
 
 function fetchPetTableData() {
     fetchAndDisplayPetTable();
+}
+
+async function filterPetsBySpecies() {
+    const speciesFilter = document.getElementById("speciesFilter").value;
+
+    try {
+        let url = '/pet-table';
+        if (speciesFilter !== 'all') {
+            url = `/pet-table?species=${speciesFilter}`;
+        }
+
+        const response = await fetch(url, { method: 'GET' });
+        const responseData = await response.json();
+        const tableData = responseData.data;
+
+        // Update table with filtered data
+        const tableBody = document.getElementById('pet_table').querySelector('tbody');
+        tableBody.innerHTML = '';
+
+        // Populate table with filtered data
+        tableData.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error filtering pet table data:", error);
+    }
 }
 
 async function fetchAndDisplayPetTable() {
@@ -758,62 +792,62 @@ async function resetSpeciesTable() {
 
 async function insertNewInsurancePolicy(event) {
     event.preventDefault();
-  
+
     const insurancePolicyNumber = document.getElementById("insurancePolicyNumber").value;
     const policyLevel = document.getElementById("policyLevel").value;
     const coverageAmount = document.getElementById("coverageAmount").value;
     const insuranceStartDate = document.getElementById("insuranceStartDate").value;
     const insuranceExpiration = document.getElementById("insuranceExpiration").value;
-  
+
     const response = await fetch('/insert-new-insurance-policy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        InsurancePolicyNumber: insurancePolicyNumber,
-        PolicyLevel: policyLevel,
-        CoverageAmount: coverageAmount,
-        InsuranceStartDate: insuranceStartDate,
-        InsuranceExpiration: insuranceExpiration
-      })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            InsurancePolicyNumber: insurancePolicyNumber,
+            PolicyLevel: policyLevel,
+            CoverageAmount: coverageAmount,
+            InsuranceStartDate: insuranceStartDate,
+            InsuranceExpiration: insuranceExpiration
+        })
     });
-  
+
     const data = await response.json();
     const messageElem = document.getElementById("insurance_form_message");
-  
-    if (data.success) {
-      if (messageElem) messageElem.textContent = "Insurance policy added successfully.";
-      fetchAndDisplayInsurancePolicies();
-    } else {
-      if (messageElem) messageElem.textContent = "Error adding insurance policy.";
-    }
-  }
 
-  async function fetchAndDisplayInsurancePolicies() {
+    if (data.success) {
+        if (messageElem) messageElem.textContent = "Insurance policy added successfully.";
+        fetchAndDisplayInsurancePolicies();
+    } else {
+        if (messageElem) messageElem.textContent = "Error adding insurance policy.";
+    }
+}
+
+async function fetchAndDisplayInsurancePolicies() {
     const tableBody = document.getElementById("insuranceTableBody");
     if (!tableBody) return;
-  
+
     tableBody.innerHTML = "";
-  
+
     try {
-      const response = await fetch('/insurance-policies', { method: 'GET' });
-      const policies = await response.json();
-  
-      policies.forEach(policy => {
-        const row = tableBody.insertRow();
-        const cellNumber = row.insertCell(0);
-        const cellLevel = row.insertCell(1);
-        const cellCoverage = row.insertCell(2);
-        const cellStart = row.insertCell(3);
-        const cellExpiration = row.insertCell(4);
-  
-        cellNumber.textContent = policy.InsurancePolicyNumber || policy.INSURANCEPOLICYNUMBER;
-        cellLevel.textContent = policy.PolicyLevel || policy.POLICYLEVEL;
-        cellCoverage.textContent = policy.CoverageAmount || policy.COVERAGEAMOUNT;
-        cellStart.textContent = policy.InsuranceStartDate || policy.INSURANCESTARTDATE;
-        cellExpiration.textContent = policy.InsuranceExpiration || policy.INSURANCEEXPIRATION;
-      });
+        const response = await fetch('/insurance-policies', { method: 'GET' });
+        const policies = await response.json();
+
+        policies.forEach(policy => {
+            const row = tableBody.insertRow();
+            const cellNumber = row.insertCell(0);
+            const cellLevel = row.insertCell(1);
+            const cellCoverage = row.insertCell(2);
+            const cellStart = row.insertCell(3);
+            const cellExpiration = row.insertCell(4);
+
+            cellNumber.textContent = policy.InsurancePolicyNumber || policy.INSURANCEPOLICYNUMBER;
+            cellLevel.textContent = policy.PolicyLevel || policy.POLICYLEVEL;
+            cellCoverage.textContent = policy.CoverageAmount || policy.COVERAGEAMOUNT;
+            cellStart.textContent = policy.InsuranceStartDate || policy.INSURANCESTARTDATE;
+            cellExpiration.textContent = policy.InsuranceExpiration || policy.INSURANCEEXPIRATION;
+        });
     } catch (error) {
-      console.error("Error fetching insurance policies:", error);
+        console.error("Error fetching insurance policies:", error);
     }
 }
 
@@ -831,7 +865,7 @@ async function resetInsuranceTable() {
     }
 }
 
-  async function initializeInsurancePolicyTable() {
+async function initializeInsurancePolicyTable() {
     try {
         const response = await fetch('/initiateNewInsurancePolicy', { method: 'POST' });
         const data = await response.json();
@@ -840,7 +874,7 @@ async function resetInsuranceTable() {
         console.error("Error initializing InsurancePolicy table:", error);
     }
 }
-  
+
 
 // ======================================================================================================================================
 // ============ MedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) ============

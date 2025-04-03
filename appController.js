@@ -20,7 +20,8 @@ router.get('/check-db-connection', async (req, res) => {
 // ======================================================================
 
 router.get('/pet-table', async (req, res) => {
-    const tableContent = await appService.fetchPetTableFromDb();
+    const species = req.query.species;
+    const tableContent = await appService.fetchPetTableFromDb(species);
     res.json({ data: tableContent });
 });
 
