@@ -521,7 +521,7 @@ async function initiateMedicalRecordTable() {
                 VaccinationStatus CHAR(1),
                 HealthCondition VARCHAR2(200),
                 VetNotes VARCHAR2(500),
-                CONSTRAINT pk_medicalRecord PRIMARY KEY (PetMicrochipID, InsurancePolicyNumber),
+                CONSTRAINT pk_medicalRecord PRIMARY KEY (PetMicrochipID, RecordID),
                 CONSTRAINT fk_medicalRecordPet FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
                 CONSTRAINT fk_medicalRecordInsurance FOREIGN KEY (InsurancePolicyNumber) REFERENCES InsurancePolicy(InsurancePolicyNumber)
             )
@@ -580,7 +580,17 @@ async function fetchMedicalRecords() {
 }
 
 // fetPetMedical
-async function fetchPetMedical() {
+async function fetchPetMedical(PetMicrochipID) {
+
+    
+    if (!PetMicrochipID || isNaN(PetMicrochipID)) {
+        console.error("Invalid PetMicrochipID: must be a valid number");
+        console.log(PetMicrochipID);
+        return []; // Return an empty array to prevent database errors
+    }
+
+    const numericPetMicrochipID = Number(PetMicrochipID);
+
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
             `SELECT PetMicrochipID,
@@ -591,7 +601,7 @@ async function fetchPetMedical() {
             VetNotes
             FROM MedicalRecord
             WHERE PetMicrochipID = :PetMicrochipID`,
-            [PetMicrochipID],
+            {PetMicrochipID: numericPetMicrochipID},
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
             );
         return result.rows;
