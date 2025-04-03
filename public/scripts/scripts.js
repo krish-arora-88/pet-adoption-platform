@@ -945,7 +945,7 @@ async function fetchAndDisplayMedicalRecordTablePet(event){
 
     try {
         const response = await fetch('/view-pet-medical', {
-            method: 'GET',
+            method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 PetMicrochipID: petMicrochipID,
@@ -954,7 +954,7 @@ async function fetchAndDisplayMedicalRecordTablePet(event){
     
         const data = await response.json();
 
-        records.forEach(record => {
+        data.data.forEach(record => {
             const row = tableBody.insertRow();
             const cellPetID = row.insertCell(0);
             const cellRecordID = row.insertCell(1);
@@ -976,10 +976,6 @@ async function fetchAndDisplayMedicalRecordTablePet(event){
     }
 
     document.getElementById("petRecordTable").style.visibility = "visible";
-
-    console.log("it worked");
-
-
 }
 
 // Adoption
