@@ -25,7 +25,10 @@ router.get('/pet-table', async (req, res) => {
     res.json({ data: tableContent });
 });
 
-
+router.get('/get-pet-stats', async (req, res) => {
+    const tableContent = await appService.fetchPetMaxAges();
+    res.json({ data: tableContent });
+});
 
 router.post("/initiateNewPet", async (req, res) => {
     const initiateResult = await appService.initiateNewPet();

@@ -89,6 +89,17 @@ async function fetchPetTableFromDb() {
     });
 }
 
+async function fetchPetMaxAges() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute('SELECT AVG(Age) FROM Pet GROUP BY(SpeciesName)');
+        return result.rows;
+    }).catch(() => {
+        return [];
+    });
+}
+
+
+
 async function fetchPetTableFromDb(species) {
     return await withOracleDB(async (connection) => {
         let query = 'SELECT * FROM Pet';
@@ -438,9 +449,8 @@ async function clearSpeciesTable() {
             console.log("Species table cleared successfully.");
         } catch (error) {
             console.error("Error clearing Species table:", error);
-            return false;
         }
-        return true;
+        initiateSpeciesTable();
     }).catch((error) => {
         console.error("Error in clearSpeciesTable:", error);
         return false;
@@ -758,6 +768,7 @@ module.exports = {
     updateAdoption,
     initiateNewAdoption,
     fetchPetMedical,
-    fetchVetProject
+    fetchVetProject,
+    fetchPetMaxAges
 
 };

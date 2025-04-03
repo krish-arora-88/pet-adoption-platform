@@ -18,6 +18,10 @@ window.onload = function () {
         document.getElementById("speciesFilter").addEventListener("change", filterPetsBySpecies);
     }
 
+    if (document.getElementById("petStatsTable")) {
+        document.getElementById("viewPetStats").addEventListener("click", viewOldesPets);
+    }
+
     // Client Sign Up
     if (document.getElementById("sign_up")) {
         document.getElementById("sign_up").addEventListener("submit", insertNewClient);
@@ -251,6 +255,35 @@ async function fetchAndDisplayPetTable() {
         });
     } catch (error) {
         console.error("Error fetching pet table data:", error);
+    }
+}
+
+async function viewOldesPets(event) {
+    event.preventDefault();
+    
+    const tableElement = document.querySelector('#petStatsTable');
+    const tableHead = tableElement.querySelector("thead tr");
+    const tableBody = tableElement.querySelector("tbody");
+    
+    try {
+        const response = await fetch('/get-pet-stats', {
+            method: 'GET'});
+
+
+        const responseData = await response.json();
+        const demotableContent = responseData.data;
+
+        if (tableBody) tableBody.innerHTML = '';
+
+        demotableContent.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error fetching vet table data:", error);
     }
 }
 
@@ -560,7 +593,7 @@ async function fetchAndDisplayVetTable() {
     }
 }
 
-async function fetchAndDisplayVetTableProject() {
+async function fetchAndDisplayVetTableProject(event) {
     event.preventDefault();
     
     const tableElement = document.querySelector('#vet_table');
