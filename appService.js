@@ -89,6 +89,24 @@ async function fetchPetTableFromDb() {
     });
 }
 
+async function fetchPetTableFromDb(species) {
+    return await withOracleDB(async (connection) => {
+        let query = 'SELECT * FROM Pet';
+        let params = [];
+
+        if (species) {
+            query = 'SELECT * FROM Pet WHERE SpeciesName = :species';
+            params = [species];
+        }
+
+        const result = await connection.execute(query, params);
+        return result.rows;
+    }).catch((error) => {
+        console.error("Database error:", error);
+        return [];
+    });
+}
+
 async function initiateNewPet() {
     return await withOracleDB(async (connection) => {
         try {
@@ -405,19 +423,19 @@ async function fetchSpeciesList() {
 
 async function clearSpeciesTable() {
     return await withOracleDB(async (connection) => {
-      try {
-        await connection.execute(`DELETE TABLE Species`);
-        console.log("Species table cleared successfully.");
-      } catch (error) {
-        console.error("Error clearing Species table:", error);
-        return false;
-      }
-      return true;
+        try {
+            await connection.execute(`DELETE TABLE Species`);
+            console.log("Species table cleared successfully.");
+        } catch (error) {
+            console.error("Error clearing Species table:", error);
+            return false;
+        }
+        return true;
     }).catch((error) => {
-      console.error("Error in clearSpeciesTable:", error);
-      return false;
+        console.error("Error in clearSpeciesTable:", error);
+        return false;
     });
-  }
+}
 
 // ========================================================================================================
 // ============ Insurance Policies (InsurancePolicyNumber, PolicyHolderName, PolicyDetails) ===============
@@ -425,12 +443,12 @@ async function clearSpeciesTable() {
 
 async function initiateInsurancePolicyTable() {
     return await withOracleDB(async (connection) => {
-      try {
-        await connection.execute(`DROP TABLE InsurancePolicy`);
-      } catch (error) {
-        console.log('InsurancePolicy table did not exist, proceeding to create...');
-      }
-      await connection.execute(`
+        try {
+            await connection.execute(`DROP TABLE InsurancePolicy`);
+        } catch (error) {
+            console.log('InsurancePolicy table did not exist, proceeding to create...');
+        }
+        await connection.execute(`
         CREATE TABLE InsurancePolicy (
             InsurancePolicyNumber NUMBER(20) PRIMARY KEY,
             PolicyLevel VARCHAR2(50),
@@ -439,48 +457,48 @@ async function initiateInsurancePolicyTable() {
             InsuranceExpiration VARCHAR2(10) CHECK (REGEXP_LIKE(InsuranceExpiration, '^[0-9]{4}/[0-9]{2}/[0-9]{2}$'))
         )
       `);
-      console.log("InsurancePolicy table created successfully.");
-      return true;
+        console.log("InsurancePolicy table created successfully.");
+        return true;
     }).catch((error) => {
-      console.error("Error creating InsurancePolicy table:", error);
-      return false;
+        console.error("Error creating InsurancePolicy table:", error);
+        return false;
     });
-  }
-  
+}
+
 async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) {
     return await withOracleDB(async (connection) => {
-      const result = await connection.execute(
-        `INSERT INTO InsurancePolicy 
+        const result = await connection.execute(
+            `INSERT INTO InsurancePolicy 
            (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
          VALUES 
            (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
-        [InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration],
-        { autoCommit: true }
-      );
-      return result.rowsAffected && result.rowsAffected > 0;
+            [InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
     }).catch((error) => {
-      console.error("Error inserting new insurance policy:", error);
-      return false;
+        console.error("Error inserting new insurance policy:", error);
+        return false;
     });
 }
-  
+
 async function fetchInsurancePolicyList() {
     return await withOracleDB(async (connection) => {
-      const result = await connection.execute(
-        `SELECT 
+        const result = await connection.execute(
+            `SELECT 
            InsurancePolicyNumber, 
            PolicyLevel, 
            CoverageAmount,
            TO_CHAR(InsuranceStartDate, 'YYYY/MM/DD') AS "InsuranceStartDate",
            TO_CHAR(InsuranceExpiration, 'YYYY/MM/DD') AS "InsuranceExpiration"
          FROM InsurancePolicy`,
-        [],
-        { outFormat: oracledb.OUT_FORMAT_OBJECT }
-      );
-      return result.rows;
+            [],
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+        );
+        return result.rows;
     }).catch((error) => {
-      console.error("Error fetching insurance policies:", error);
-      return [];
+        console.error("Error fetching insurance policies:", error);
+        return [];
     });
 }
 
@@ -553,11 +571,11 @@ async function fetchMedicalRecords() {
             FROM MedicalRecord`,
             [],
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
-            );
+        );
         return result.rows;
     }).catch((error) => {
         console.error("Error fetching medical records:", error);
-        return[];
+        return [];
     })
 }
 
