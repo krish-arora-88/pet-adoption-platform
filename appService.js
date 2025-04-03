@@ -100,14 +100,29 @@ async function fetchPetMaxAges() {
 
 
 
-async function fetchPetTableFromDb(species) {
+async function fetchPetTableFromDb(species, minAge, maxAge) {
     return await withOracleDB(async (connection) => {
         let query = 'SELECT * FROM Pet';
-        let params = [];
+        let conditions = [];
+        let params = {};
 
         if (species) {
-            query = 'SELECT * FROM Pet WHERE SpeciesName = :species';
-            params = [species];
+            conditions.push('SpeciesName = :species');
+            params.species = species;
+        }
+
+        if (minAge) {
+            conditions.push('Age >= :minAge');
+            params.minAge = minAge;
+        }
+
+        if (maxAge) {
+            conditions.push('Age <= :maxAge');
+            params.maxAge = maxAge;
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
         }
 
         const result = await connection.execute(query, params);
@@ -461,41 +476,41 @@ async function clearSpeciesTable() {
 
 async function updateSpecies(speciesName, housingSpace, groomingRoutine, dietType) {
     return await withOracleDB(async (connection) => {
-      const result = await connection.execute(
-        `UPDATE Species 
+        const result = await connection.execute(
+            `UPDATE Species 
          SET HousingSpaceRequired = :housingSpace,
              GroomingRoutine = :groomingRoutine,
              DietType = :dietType
          WHERE speciesName = :speciesName`,
-        [housingSpace, groomingRoutine, dietType, speciesName],
-        { autoCommit: true }
-      );
-      return result.rowsAffected && result.rowsAffected > 0;
+            [housingSpace, groomingRoutine, dietType, speciesName],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
     }).catch((error) => {
-      console.error("Error updating species:", error);
-      return false;
+        console.error("Error updating species:", error);
+        return false;
     });
 }
-  
+
 async function deleteSpecies(speciesName) {
     return await withOracleDB(async (connection) => {
-      await connection.execute(
-        `DELETE FROM Pet WHERE SpeciesName = :speciesName`,
-        [speciesName],
-        { autoCommit: true }
-      );
-      const result = await connection.execute(
-        `DELETE FROM Species WHERE speciesName = :speciesName`,
-        [speciesName],
-        { autoCommit: true }
-      );
-      return result.rowsAffected && result.rowsAffected > 0;
+        await connection.execute(
+            `DELETE FROM Pet WHERE SpeciesName = :speciesName`,
+            [speciesName],
+            { autoCommit: true }
+        );
+        const result = await connection.execute(
+            `DELETE FROM Species WHERE speciesName = :speciesName`,
+            [speciesName],
+            { autoCommit: true }
+        );
+        return result.rowsAffected && result.rowsAffected > 0;
     }).catch((error) => {
-      console.error("Error deleting species:", error);
-      return false;
+        console.error("Error deleting species:", error);
+        return false;
     });
-  }
-  
+}
+
 
 
 // ========================================================================================================
@@ -651,7 +666,7 @@ async function fetchMedicalRecords() {
 // fetPetMedical
 async function fetchPetMedical(PetMicrochipID) {
 
-    
+
     if (!PetMicrochipID || isNaN(PetMicrochipID)) {
         console.error("Invalid PetMicrochipID: must be a valid number");
         console.log(PetMicrochipID);
@@ -670,13 +685,13 @@ async function fetchPetMedical(PetMicrochipID) {
             VetNotes
             FROM MedicalRecord
             WHERE PetMicrochipID = :PetMicrochipID`,
-            {PetMicrochipID: numericPetMicrochipID},
+            { PetMicrochipID: numericPetMicrochipID },
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
-            );
+        );
         return result.rows;
     }).catch((error) => {
         console.error("Error fetching medical records of pet:", error);
-        return[];
+        return [];
     })
 }
 

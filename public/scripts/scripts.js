@@ -22,6 +22,14 @@ window.onload = function () {
         document.getElementById("viewPetStats").addEventListener("click", viewOldesPets);
     }
 
+    if (document.getElementById("applyFilters")) {
+        document.getElementById("applyFilters").addEventListener("click", applyPetFilters);
+    }
+
+    if (document.getElementById("resetFilters")) {
+        document.getElementById("resetFilters").addEventListener("click", resetPetFilters);
+    }
+
     // Client Sign Up
     if (document.getElementById("sign_up")) {
         document.getElementById("sign_up").addEventListener("submit", insertNewClient);
@@ -202,6 +210,53 @@ function fetchPetTableData() {
     fetchAndDisplayPetTable();
 }
 
+async function applyPetFilters() {
+    const speciesFilter = document.getElementById("speciesFilter").value;
+    const ageMinFilter = document.getElementById("ageMinFilter").value;
+    const ageMaxFilter = document.getElementById("ageMaxFilter").value;
+
+    try {
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (speciesFilter !== 'all') {
+            params.append('species', speciesFilter);
+        }
+        if (ageMinFilter) {
+            params.append('minAge', ageMinFilter);
+        }
+        if (ageMaxFilter) {
+            params.append('maxAge', ageMaxFilter);
+        }
+
+        const url = `/pet-table?${params.toString()}`;
+        const response = await fetch(url, { method: 'GET' });
+        const responseData = await response.json();
+        const tableData = responseData.data;
+
+        // Update table with filtered data
+        const tableBody = document.getElementById('pet_table').querySelector('tbody');
+        tableBody.innerHTML = '';
+
+        // Populate table with filtered data
+        tableData.forEach(rowData => {
+            const row = tableBody.insertRow();
+            rowData.forEach((field, index) => {
+                const cell = row.insertCell(index);
+                cell.textContent = field;
+            });
+        });
+    } catch (error) {
+        console.error("Error filtering pet table data:", error);
+    }
+}
+
+function resetPetFilters() {
+    document.getElementById("speciesFilter").value = 'all';
+    document.getElementById("ageMinFilter").value = '';
+    document.getElementById("ageMaxFilter").value = '';
+    fetchPetTableData(); // Fetch all data without filters
+}
+
 async function filterPetsBySpecies() {
     const speciesFilter = document.getElementById("speciesFilter").value;
 
@@ -260,14 +315,15 @@ async function fetchAndDisplayPetTable() {
 
 async function viewOldesPets(event) {
     event.preventDefault();
-    
+
     const tableElement = document.querySelector('#petStatsTable');
     const tableHead = tableElement.querySelector("thead tr");
     const tableBody = tableElement.querySelector("tbody");
-    
+
     try {
         const response = await fetch('/get-pet-stats', {
-            method: 'GET'});
+            method: 'GET'
+        });
 
 
         const responseData = await response.json();
@@ -595,7 +651,7 @@ async function fetchAndDisplayVetTable() {
 
 async function fetchAndDisplayVetTableProject(event) {
     event.preventDefault();
-    
+
     const tableElement = document.querySelector('#vet_table');
     const tableHead = tableElement.querySelector("thead tr");
     const tableBody = tableElement.querySelector("tbody");
@@ -612,14 +668,14 @@ async function fetchAndDisplayVetTableProject(event) {
                 selected += "," + checkboxes[i].value;
             }
             let headerCell = document.createElement("th");
-            headerCell.innerText=(checkboxes[i].value);
+            headerCell.innerText = (checkboxes[i].value);
             tableHead.appendChild(headerCell);
         }
     }
 
     if (!tableBody) return;
     console.log("Selected filters:", selected);
-    
+
     try {
         const response = await fetch('/vet-table-project', {
             method: 'POST',
@@ -755,49 +811,49 @@ async function handleInsertSpecies(event) {
     const groomingRoutine = document.getElementById("groomingRoutine").value;
     const dietType = document.getElementById("dietType").value;
     const messageElem = document.getElementById("species_form_message");
-  
+
     try {
-      let response, data;
-      if (speciesNameElem.readOnly) {
-        console.log("Update branch: updating species", speciesName, housingSpace, groomingRoutine, dietType);
-        response = await fetch('/update-species', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ speciesName, housingSpace, groomingRoutine, dietType })
-        });
-        console.log("Response from update-species:", response);
-        data = await response.json();
-        console.log("Parsed update response:", data);
-        if (data.success) {
-          messageElem.textContent = "Species updated successfully.";
+        let response, data;
+        if (speciesNameElem.readOnly) {
+            console.log("Update branch: updating species", speciesName, housingSpace, groomingRoutine, dietType);
+            response = await fetch('/update-species', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ speciesName, housingSpace, groomingRoutine, dietType })
+            });
+            console.log("Response from update-species:", response);
+            data = await response.json();
+            console.log("Parsed update response:", data);
+            if (data.success) {
+                messageElem.textContent = "Species updated successfully.";
+            } else {
+                messageElem.textContent = "Error updating species.";
+            }
+            speciesNameElem.readOnly = false;
+            document.querySelector("#speciesForm button").textContent = "Add Species";
         } else {
-          messageElem.textContent = "Error updating species.";
+            console.log("Insert branch: inserting species", speciesName, housingSpace, groomingRoutine, dietType);
+            response = await fetch('/insert-new-species', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ speciesName, housingSpace, groomingRoutine, dietType })
+            });
+            data = await response.json();
+            if (data.success) {
+                messageElem.textContent = "Species added successfully.";
+            } else {
+                messageElem.textContent = "Error adding species. It may already exist.";
+            }
         }
-        speciesNameElem.readOnly = false;
-        document.querySelector("#speciesForm button").textContent = "Add Species";
-      } else {
-        console.log("Insert branch: inserting species", speciesName, housingSpace, groomingRoutine, dietType);
-        response = await fetch('/insert-new-species', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ speciesName, housingSpace, groomingRoutine, dietType })
-        });
-        data = await response.json();
-        if (data.success) {
-          messageElem.textContent = "Species added successfully.";
-        } else {
-          messageElem.textContent = "Error adding species. It may already exist.";
-        }
-      }
-      await fetchAndDisplaySpeciesTable();
-      await populateSpeciesDropdown();
-      document.getElementById("speciesForm").reset();
+        await fetchAndDisplaySpeciesTable();
+        await populateSpeciesDropdown();
+        document.getElementById("speciesForm").reset();
     } catch (error) {
-      console.error("Error in handleInsertSpecies:", error);
-      messageElem.textContent = "Error processing species.";
+        console.error("Error in handleInsertSpecies:", error);
+        messageElem.textContent = "Error processing species.";
     }
-  }
-  
+}
+
 
 
 async function fetchAndDisplaySpeciesTable() {
@@ -904,11 +960,11 @@ function populateSpeciesForm(species) {
     document.getElementById("housingSpace").value = species.HousingSpaceRequired;
     document.getElementById("groomingRoutine").value = species.GroomingRoutine;
     document.getElementById("dietType").value = species.DietType;
-    
+
     const submitButton = document.querySelector("#speciesForm button");
     submitButton.textContent = "Update Species";
-    
-    document.getElementById("speciesName").readOnly = true; 
+
+    document.getElementById("speciesName").readOnly = true;
 }
 
 async function deleteSpeciesEntry(speciesName) {
@@ -1116,7 +1172,7 @@ async function initializeMedicalRecordTable() {
     }
 }
 
-async function fetchAndDisplayMedicalRecordTablePet(event){
+async function fetchAndDisplayMedicalRecordTablePet(event) {
     event.preventDefault();
 
     const petMicrochipID = document.getElementById("petMicrochipMedical").value;
@@ -1134,7 +1190,7 @@ async function fetchAndDisplayMedicalRecordTablePet(event){
                 PetMicrochipID: petMicrochipID,
             })
         });
-    
+
         const data = await response.json();
 
         data.data.forEach(record => {

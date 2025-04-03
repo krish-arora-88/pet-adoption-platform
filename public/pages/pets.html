@@ -15,9 +15,8 @@
         <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
     </a>
     <h1>Available Pets</h1>
-    <div class="responsibility">
-        <h2>View pets by Species</h2>
-        <div class="filter-container">
+    <div class="filter-container">
+        <div class="filter-item">
             <label for="speciesFilter">Filter by Species:</label>
             <select id="speciesFilter">
                 <option value="all">All Species</option>
@@ -28,24 +27,35 @@
             </select>
         </div>
 
-        <table id="pet_table" border="1">
-            <thead>
-                <tr>
-                    <!--Table head, need to be adjusted accordingly to align with your own.-->
-                    <th>ID</th>
-                    <th>Name</th>
-                    <th>Age</th>
-                    <th>Breed</th>
-                    <th>Gender</th>
-                    <th>Species</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-        <button id="see_pets">See Pets</button>
-        <button id="resetPetTable">Reset Table</button>
-        <br>
+        <div class="filter-item">
+            <label for="ageMinFilter">Age Range:</label>
+            <input type="number" id="ageMinFilter" min="0" placeholder="Min Age" class="age-input">
+            <span>to</span>
+            <input type="number" id="ageMaxFilter" min="0" placeholder="Max Age" class="age-input">
+        </div>
+
+        <button id="applyFilters">Apply Filters</button>
+        <button id="resetFilters">Reset Filters</button>
+    </div>
+
+    <table id="pet_table" border="1">
+        <thead>
+            <tr>
+                <!--Table head, need to be adjusted accordingly to align with your own.-->
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Breed</th>
+                <th>Gender</th>
+                <th>Species</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+    <button id="see_pets">See Pets</button>
+    <button id="resetPetTable">Reset Table</button>
+    <br>
     </div>
 
     <div class="responsibility">
