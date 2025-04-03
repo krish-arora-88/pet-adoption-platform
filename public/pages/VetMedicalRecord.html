@@ -10,34 +10,63 @@
 </head>
 
 <body>
+    <div class="responsibility">
+        <h1>All medical Records</h1>
 
-    <form id="medicalRecordForm">
-        <input type="text" id="petMicrochipID" placeholder="Pet Microchip ID" required />
-        <input type="text" id="recordID" placeholder="Record ID" required />
-        <input type="text" id="insurancePolicyNumber" placeholder="Insurance Policy Number" required />
-        <input type="text" id="vaccinationStatus" placeholder="Vaccination Status" required />
-        <input type="text" id="healthCondition" placeholder="Health Condition" />
-        <input type="text" id="vetNotes" placeholder="Vet Notes" />
-        <button type="submit">Add Medical Record</button>
-    </form>
+        <form id="medicalRecordForm">
+            <input type="text" id="petMicrochipID" placeholder="Pet Microchip ID" required />
+            <input type="text" id="recordID" placeholder="Record ID" required />
+            <input type="text" id="insurancePolicyNumber" placeholder="Insurance Policy Number" required />
+            <input type="text" id="vaccinationStatus" placeholder="Vaccination Status" required />
+            <input type="text" id="healthCondition" placeholder="Health Condition" />
+            <input type="text" id="vetNotes" placeholder="Vet Notes" />
+            <button type="submit">Add Medical Record</button>
+        </form>
+    
+        <table id="medicalRecordTable" class="tables-style" border="1">
+            <thead>
+                <tr>
+                    <th>Pet Microchip ID</th>
+                    <th>Record ID</th>
+                    <th>Insurance Policy #</th>
+                    <th>Vaccination Status</th>
+                    <th>Health Condition</th>
+                    <th>Vet Notes</th>
+                </tr>
+            </thead>
+            <tbody id="medicalRecordTableBody">
+    
+            </tbody>
+        </table>
+    
+        <button id="resetMedicalRecordTable">Reset Medical Record Table</button>
+    </div>
+<br>
 
-    <table id="medicalRecordTable" class="tables-style" border="1">
-        <thead>
-            <tr>
-                <th>Pet Microchip ID</th>
-                <th>Record ID</th>
-                <th>Insurance Policy #</th>
-                <th>Vaccination Status</th>
-                <th>Health Condition</th>
-                <th>Vet Notes</th>
-            </tr>
-        </thead>
-        <tbody id="medicalRecordTableBody">
+    <div class="responsibility">
+        <h1>View specific pet's records</h1>
 
-        </tbody>
-    </table>
+        <form id="accessPetMedical">
+            <input type="text" id = "petMicrochipMedical" placeholder="Pet Microchip ID" required/>
+            <button type="submit">Get Pet's records</button>
+        </form>
 
-    <button id="resetMedicalRecordTable">Reset Medical Record Table</button>
+        <table id="petRecordTable" class="tables-style" border="1" style="visibility: hidden;">
+            <thead>
+                <tr>
+                    <th>Pet Microchip ID</th>
+                    <th>Record ID</th>
+                    <th>Insurance Policy #</th>
+                    <th>Vaccination Status</th>
+                    <th>Health Condition</th>
+                    <th>Vet Notes</th>
+                </tr>
+            </thead>
+            <tbody id="petRecordTableBody">
+    
+            </tbody>
+        </table>
+    </div>
 
     <p><a href="../index.html">Return Home</a></p>
 

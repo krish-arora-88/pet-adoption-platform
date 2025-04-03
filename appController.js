@@ -136,6 +136,16 @@ router.post("/update-vet", async (req, res) => {
     }
 });
 
+// medical record
+
+router.get("/view-pet-medical", async (req, res) => {
+    const { PetMicrochipID } = req.body;
+    const tableContent = await appService.fetchPetMedical(PetMicrochipID);
+    res.json({ data: tableContent });
+});
+
+
+
 // ======================================================================
 // =========== AdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity)
 // ======================================================================

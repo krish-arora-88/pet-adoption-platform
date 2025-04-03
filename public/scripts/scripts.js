@@ -107,6 +107,10 @@ window.onload = function () {
         fetchAndDisplayMedicalRecordTable();
     }
 
+    if (document.getElementById("accessPetMedical")) {
+        document.getElementById("accessPetMedical").addEventListener("submit", fetchAndDisplayMedicalRecordTablePet);
+    }
+
     // Adoption Management
     if (document.getElementById("adoption_table")) {
         fetchAndDisplayAdoptionTable();
@@ -927,6 +931,55 @@ async function initializeMedicalRecordTable() {
     } catch (error) {
         console.error("Error initializing MedicalRecord table:", error);
     }
+}
+
+async function fetchAndDisplayMedicalRecordTablePet(event){
+    event.preventDefault();
+
+    const petMicrochipID = document.getElementById("petMicrochipMedical").value;
+
+    const tableBody = document.getElementById("petRecordTableBody");
+    if (!tableBody) return;
+
+    tableBody.innerHTML = "";
+
+    try {
+        const response = await fetch('/view-pet-medical', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                PetMicrochipID: petMicrochipID,
+            })
+        });
+    
+        const data = await response.json();
+
+        records.forEach(record => {
+            const row = tableBody.insertRow();
+            const cellPetID = row.insertCell(0);
+            const cellRecordID = row.insertCell(1);
+            const cellInsurance = row.insertCell(2);
+            const cellVaccination = row.insertCell(3);
+            const cellHealth = row.insertCell(4);
+            const cellVetNotes = row.insertCell(5);
+
+            cellPetID.textContent = record.PETMICROCHIPID;
+            cellRecordID.textContent = record.RECORDID;
+            cellInsurance.textContent = record.INSURANCEPOLICYNUMBER;
+            cellVaccination.textContent = record.VACCINATIONSTATUS;
+            cellHealth.textContent = record.HEALTHCONDITION;
+            cellVetNotes.textContent = record.VETNOTES;
+        });
+
+    } catch (error) {
+        console.error("Error fetching medical records:", error);
+    }
+
+    document.getElementById("petRecordTable").style.visibility = "visible";
+
+    console.log("it worked");
+
+
 }
 
 // Adoption
