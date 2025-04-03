@@ -579,6 +579,28 @@ async function fetchMedicalRecords() {
     })
 }
 
+// fetPetMedical
+async function fetchPetMedical() {
+    return await withOracleDB(async (connection) => {
+        const result = await connection.execute(
+            `SELECT PetMicrochipID,
+            RecordID,
+            InsurancePolicyNumber,
+            VaccinationStatus,
+            HealthCondition,
+            VetNotes
+            FROM MedicalRecord
+            WHERE PetMicrochipID = :PetMicrochipID`,
+            [PetMicrochipID],
+            { outFormat: oracledb.OUT_FORMAT_OBJECT }
+            );
+        return result.rows;
+    }).catch((error) => {
+        console.error("Error fetching medical records of pet:", error);
+        return[];
+    })
+}
+
 // Adoption
 
 async function initiateNewAdoption() {
@@ -714,6 +736,7 @@ module.exports = {
     fetchAdoptionTableFromDb,
     insertNewAdoption,
     updateAdoption,
-    initiateNewAdoption
+    initiateNewAdoption,
+    fetchPetMedical
 
 };
