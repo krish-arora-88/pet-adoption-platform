@@ -79,6 +79,30 @@ app.post('/clearSpeciesTable', async (req, res) => {
   }
 });
 
+app.post('/update-species', async (req, res) => {
+  try {
+    const { speciesName, housingSpace, groomingRoutine, dietType } = req.body;
+    const success = await db.updateSpecies(speciesName, housingSpace, groomingRoutine, dietType);
+    res.json({ success });
+  } catch (error) {
+    console.error("Error updating species:", error);
+    res.status(500).json({ error: "Error updating species" });
+  }
+});
+
+
+app.post('/delete-species', async (req, res) => {
+  try {
+    const { speciesName } = req.body;
+    const success = await db.deleteSpecies(speciesName);
+    res.json({ success });
+  } catch (error) {
+    console.error("Error deleting species:", error);
+    res.status(500).json({ error: "Error deleting species" });
+  }
+});
+
+
 
 app.post('/insert-new-pet', async (req, res) => {
     try {
@@ -168,3 +192,4 @@ app.post('/initiateNewMedicalRecord', async (req, res) => {
     }
   });
   
+
