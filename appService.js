@@ -91,7 +91,7 @@ async function fetchPetTableFromDb() {
 
 async function fetchPetMaxAges() {
     return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT AVG(Age) FROM Pet GROUP BY(SpeciesName)');
+        const result = await connection.execute('SELECT SpeciesName, AVG(Age) FROM Pet GROUP BY(SpeciesName)');
         return result.rows;
     }).catch(() => {
         return [];
