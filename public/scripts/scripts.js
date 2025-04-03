@@ -561,29 +561,32 @@ async function fetchAndDisplayVetTable() {
 }
 
 async function fetchAndDisplayVetTableProject() {
+    event.preventDefault();
     
-    const tableBody = tableElement.getElementById('vet_table');
-
+    const tableElement = document.querySelector('#vet_table');
+    const tableHead = tableElement.querySelector("thead tr");
+    const tableBody = tableElement.querySelector("tbody");
     let checkboxes = document.getElementsByName('vetInfo');
     let selected = ""
+
+    tableHead.innerHTML = '';
+
     for (var i = 0; i < checkboxes.length; i++) {
         if (checkboxes[i].checked) {
             if (selected == "") {
-                selected += checkboxes[i]
+                selected += checkboxes[i].value;
             } else {
-                selected += "," + checkboxes[i]
+                selected += "," + checkboxes[i].value;
             }
-            let header = tableBody.inserRow();
             let headerCell = document.createElement("th");
-            headerCell.innerText=(checkboxes[i]);
-            header.appendChild(headerCell);
+            headerCell.innerText=(checkboxes[i].value);
+            tableHead.appendChild(headerCell);
         }
     }
 
-    const tableElement = document.getElementById('projectVetInfo');
-    if (!tableElement) return;
+    if (!tableBody) return;
+    console.log("Selected filters:", selected);
     
-
     try {
         const response = await fetch('/vet-table-project', {
             method: 'POST',

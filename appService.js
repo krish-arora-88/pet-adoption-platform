@@ -260,7 +260,7 @@ async function fetchVetTableFromDb() {
 async function fetchVetProject(selectors) {
     return await withOracleDB(async (connection) => {
         const text = "SELECT " + selectors + " FROM Veterinarian"
-        const result = await connection.execute('SELECT * FROM Veterinarian');
+        const result = await connection.execute(text);
         return result.rows;
     }).catch(() => {
         return [];
