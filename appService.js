@@ -454,9 +454,14 @@ async function clearSpeciesTable() {
 async function initiateInsurancePolicyTable() {
     return await withOracleDB(async (connection) => {
         try {
-            await connection.execute(`DROP TABLE InsurancePolicy`);
+            await connection.execute(`DROP TABLE InsurancePolicy CASCADE CONSTRAINTS`);
+            console.log("InsurancePolicy table dropped successfully.");
         } catch (error) {
-            console.log('InsurancePolicy table did not exist, proceeding to create...');
+            if (error.errorNum === 942) {
+                console.log('InsurancePolicy table did not exist, proceeding to create...');
+            } else {
+                throw error;
+            }
         }
         await connection.execute(`
         CREATE TABLE InsurancePolicy (
@@ -475,13 +480,14 @@ async function initiateInsurancePolicyTable() {
     });
 }
 
+
 async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
             `INSERT INTO InsurancePolicy 
-           (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
-         VALUES 
-           (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
+             (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
+             VALUES 
+             (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
             [InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration],
             { autoCommit: true }
         );
@@ -492,16 +498,17 @@ async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAm
     });
 }
 
+
 async function fetchInsurancePolicyList() {
     return await withOracleDB(async (connection) => {
         const result = await connection.execute(
             `SELECT 
-           InsurancePolicyNumber, 
-           PolicyLevel, 
-           CoverageAmount,
-           TO_CHAR(InsuranceStartDate, 'YYYY/MM/DD') AS "InsuranceStartDate",
-           TO_CHAR(InsuranceExpiration, 'YYYY/MM/DD') AS "InsuranceExpiration"
-         FROM InsurancePolicy`,
+               InsurancePolicyNumber, 
+               PolicyLevel, 
+               CoverageAmount,
+               InsuranceStartDate,
+               InsuranceExpiration
+             FROM InsurancePolicy`,
             [],
             { outFormat: oracledb.OUT_FORMAT_OBJECT }
         );
@@ -511,6 +518,7 @@ async function fetchInsurancePolicyList() {
         return [];
     });
 }
+
 
 // ======================================================================================================================================
 // ============ MedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) ============
