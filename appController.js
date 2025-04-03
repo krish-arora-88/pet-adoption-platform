@@ -21,7 +21,9 @@ router.get('/check-db-connection', async (req, res) => {
 
 router.get('/pet-table', async (req, res) => {
     const species = req.query.species;
-    const tableContent = await appService.fetchPetTableFromDb(species);
+    const minAge = req.query.minAge;
+    const maxAge = req.query.maxAge;
+    const tableContent = await appService.fetchPetTableFromDb(species, minAge, maxAge);
     res.json({ data: tableContent });
 });
 
