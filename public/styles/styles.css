@@ -416,6 +416,49 @@ a:hover {
     padding-right: 10px;
 }
 
+.filter-container {
+    margin-bottom: 20px;
+    padding: 15px;
+    background-color: #f5f5f5;
+    border-radius: 5px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+#speciesFilter,
+.age-input {
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.age-input {
+    width: 80px;
+}
+
+#applyFilters,
+#resetFilters {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    cursor: pointer;
+}
+
+#applyFilters:hover,
+#resetFilters:hover {
+    background-color: #e0e0e0;
+}
+
+
 .responsibility {
     text-align: left;
     padding-right: 20px;
