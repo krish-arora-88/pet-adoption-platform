@@ -260,6 +260,17 @@ router.post("/update-adoption", async (req, res) => {
     }
 });
 
+router.get('/query-species', async (req, res) => {
+    const minCount = parseInt(req.query.minCount, 10) || 0;
+    try {
+      const rows = await appService.getSpeciesWithMinPets(minCount);
+      res.json({ data: rows });
+    } catch (error) {
+      console.error("Error executing aggregation query:", error);
+      res.status(500).json({ error: "Error executing query" });
+    }
+  });
+
 // // Demotable, not used in app but here for reference
 // router.post("/update-name-demotable", async (req, res) => {
 //     const { oldName, newName } = req.body;

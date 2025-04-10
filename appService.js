@@ -512,6 +512,24 @@ async function deleteSpecies(speciesName) {
     });
 }
 
+async function getSpeciesWithMinPets(minCount) {
+    return await withOracleDB(async (connection) => {
+      const query = `
+        SELECT SpeciesName, COUNT(*) AS NumPets
+        FROM Pet
+        GROUP BY SpeciesName
+        HAVING COUNT(*) >= :minCount
+      `;
+      const result = await connection.execute(query, [minCount], {
+        outFormat: oracledb.OUT_FORMAT_OBJECT
+      });
+      return result.rows;
+    }).catch((error) => {
+      console.error("Error fetching species by pet count:", error);
+      return [];
+    });
+  }
+
 
 
 // ========================================================================================================
@@ -836,6 +854,7 @@ module.exports = {
     initiateNewAdoption,
     fetchPetMedical,
     fetchVetProject,
-    fetchPetMaxAges
+    fetchPetMaxAges,
+    getSpeciesWithMinPets
 
 };

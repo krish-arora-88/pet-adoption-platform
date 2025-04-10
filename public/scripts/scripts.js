@@ -988,6 +988,46 @@ async function deleteSpeciesEntry(speciesName) {
     }
 }
 
+document.getElementById("querySpecies").addEventListener("click", async function () {
+    const minCount = document.getElementById("minPetCount").value;
+    
+    try {
+        const response = await fetch(`/query-species?minCount=${minCount}`, {
+            method: "GET"
+        });
+        
+        const result = await response.json();
+        
+        const tableBody = document.getElementById("aggregationResultTableBody");
+        tableBody.innerHTML = ""; 
+        
+        if (result.data && result.data.length > 0) {
+            result.data.forEach(row => {
+            const tr = document.createElement("tr");
+            const tdSpecies = document.createElement("td");
+            tdSpecies.textContent = row.SPECIESNAME; 
+            const tdCount = document.createElement("td");
+            tdCount.textContent = row.NUMPETS || row.NumPets;
+            tr.appendChild(tdSpecies);
+            tr.appendChild(tdCount);
+            tableBody.appendChild(tr);
+        });
+
+    } else {
+        
+        const tr = document.createElement("tr");
+        const td = document.createElement("td");
+        td.setAttribute("colspan", "2");
+        td.textContent = "No species found meeting this criteria.";
+        tr.appendChild(td);
+        tableBody.appendChild(tr);
+    }
+} catch (error) {
+    console.error("Error executing aggregation query:", error);
+}
+});
+  
+
 
 
 // =========================================================================================================================

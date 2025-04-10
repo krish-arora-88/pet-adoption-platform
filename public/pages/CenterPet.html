@@ -38,6 +38,22 @@
 
     <button type="button" id="resetSpeciesTable">Reset Species Table</button>
 
+    <h2>Species with Minimum Pet Count</h2>
+    <div id="aggregationQuery">
+      <input type="number" id="minPetCount" placeholder="Enter minimum pet count" />
+      <button id="querySpecies">Run Query</button>
+    </div>
+  
+    <table id="aggregationResultTable" class="tables-style" border="1">
+      <thead>
+        <tr>
+          <th>Species Name</th>
+          <th>Number of Pets</th>
+        </tr>
+      </thead>
+      <tbody id="aggregationResultTableBody"></tbody>
+    </table>
+
     <p><a href="../index.html">Return Home</a></p>
 
     <script src="../scripts/scripts.js"></script>
