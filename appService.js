@@ -175,6 +175,25 @@ async function insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName) 
     });
 }
 
+async function fetchSpeciesAgeStats() {
+    return withOracleDB(async (connection) => {
+        const result = await connection.execute(`
+        SELECT SpeciesName, AVG(Age)
+        FROM Pet
+        GROUP BY SpeciesName
+        HAVING AVG(Age) > (
+          SELECT MIN(AvgAge) 
+          FROM (
+            SELECT AVG(Age) AS AvgAge 
+            FROM Pet 
+            GROUP BY SpeciesName
+          )
+        )
+      `);
+        return result.rows;
+    });
+}
+
 // ======================================================================
 // =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
 // LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
@@ -514,21 +533,21 @@ async function deleteSpecies(speciesName) {
 
 async function getSpeciesWithMinPets(minCount) {
     return await withOracleDB(async (connection) => {
-      const query = `
+        const query = `
         SELECT SpeciesName, COUNT(*) AS NumPets
         FROM Pet
         GROUP BY SpeciesName
         HAVING COUNT(*) >= :minCount
       `;
-      const result = await connection.execute(query, [minCount], {
-        outFormat: oracledb.OUT_FORMAT_OBJECT
-      });
-      return result.rows;
+        const result = await connection.execute(query, [minCount], {
+            outFormat: oracledb.OUT_FORMAT_OBJECT
+        });
+        return result.rows;
     }).catch((error) => {
-      console.error("Error fetching species by pet count:", error);
-      return [];
+        console.error("Error fetching species by pet count:", error);
+        return [];
     });
-  }
+}
 
 
 
@@ -826,6 +845,7 @@ module.exports = {
     initiateNewPet,
     insertNewClient,
     initiateNewClient,
+    fetchSpeciesAgeStats,
     updateClient,
     fetchClientTableFromDb,
     insertNewVet,

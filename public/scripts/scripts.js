@@ -30,6 +30,10 @@ window.onload = function () {
         document.getElementById("resetFilters").addEventListener("click", resetPetFilters);
     }
 
+    if (document.getElementById('speciesAgeStats')) {
+        document.getElementById('speciesAgeStats').addEventListener('click', fetchSpeciesAgeStats);
+    }
+
     // Client Sign Up
     if (document.getElementById("sign_up")) {
         document.getElementById("sign_up").addEventListener("submit", insertNewClient);
@@ -340,6 +344,27 @@ async function viewOldesPets(event) {
         });
     } catch (error) {
         console.error("Error fetching vet table data:", error);
+    }
+}
+
+async function fetchSpeciesAgeStats() {
+    try {
+        const response = await fetch('/species-age-stats');
+        const { data } = await response.json();
+
+        const tbody = document.querySelector('#speciesStatsTable tbody');
+        tbody.innerHTML = '';
+
+        data.forEach(row => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+          <td>${row[0]}</td>
+          <td>${row[1].toFixed(1)}</td>
+        `;
+            tbody.appendChild(tr);
+        });
+    } catch (error) {
+        console.error("Error fetching species age stats:", error);
     }
 }
 
@@ -990,43 +1015,43 @@ async function deleteSpeciesEntry(speciesName) {
 
 document.getElementById("querySpecies").addEventListener("click", async function () {
     const minCount = document.getElementById("minPetCount").value;
-    
+
     try {
         const response = await fetch(`/query-species?minCount=${minCount}`, {
             method: "GET"
         });
-        
+
         const result = await response.json();
-        
+
         const tableBody = document.getElementById("aggregationResultTableBody");
-        tableBody.innerHTML = ""; 
-        
+        tableBody.innerHTML = "";
+
         if (result.data && result.data.length > 0) {
             result.data.forEach(row => {
-            const tr = document.createElement("tr");
-            const tdSpecies = document.createElement("td");
-            tdSpecies.textContent = row.SPECIESNAME; 
-            const tdCount = document.createElement("td");
-            tdCount.textContent = row.NUMPETS || row.NumPets;
-            tr.appendChild(tdSpecies);
-            tr.appendChild(tdCount);
-            tableBody.appendChild(tr);
-        });
+                const tr = document.createElement("tr");
+                const tdSpecies = document.createElement("td");
+                tdSpecies.textContent = row.SPECIESNAME;
+                const tdCount = document.createElement("td");
+                tdCount.textContent = row.NUMPETS || row.NumPets;
+                tr.appendChild(tdSpecies);
+                tr.appendChild(tdCount);
+                tableBody.appendChild(tr);
+            });
 
-    } else {
-        
-        const tr = document.createElement("tr");
-        const td = document.createElement("td");
-        td.setAttribute("colspan", "2");
-        td.textContent = "No species found meeting this criteria.";
-        tr.appendChild(td);
-        tableBody.appendChild(tr);
+        } else {
+
+            const tr = document.createElement("tr");
+            const td = document.createElement("td");
+            td.setAttribute("colspan", "2");
+            td.textContent = "No species found meeting this criteria.";
+            tr.appendChild(td);
+            tableBody.appendChild(tr);
+        }
+    } catch (error) {
+        console.error("Error executing aggregation query:", error);
     }
-} catch (error) {
-    console.error("Error executing aggregation query:", error);
-}
 });
-  
+
 
 
 
