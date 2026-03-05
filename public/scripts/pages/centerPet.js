@@ -60,11 +60,20 @@ async function fetchAndDisplaySpeciesTable() {
     const speciesTableBody = document.getElementById('speciesTableBody');
     if (!speciesTableBody) return;
 
-    speciesTableBody.innerHTML = '';
+    while (speciesTableBody.firstChild) speciesTableBody.removeChild(speciesTableBody.firstChild);
 
     try {
         const response = await apiFetch('/species-list', { method: 'GET' });
         const speciesData = await response.json();
+
+        if (!speciesData || speciesData.length === 0) {
+            const row = speciesTableBody.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 6;
+            cell.className = 'table-empty';
+            cell.textContent = 'No species found.';
+            return;
+        }
 
         speciesData.forEach(species => {
             const row = speciesTableBody.insertRow();
@@ -118,7 +127,7 @@ async function populateSpeciesDropdown() {
         const response = await apiFetch('/species-list', { method: 'GET' });
         const speciesData = await response.json();
 
-        speciesSelect.innerHTML = '';
+        while (speciesSelect.firstChild) speciesSelect.removeChild(speciesSelect.firstChild);
 
         const placeHolder = document.createElement('option');
         placeHolder.value = '';
@@ -205,7 +214,7 @@ if (querySpeciesBtn) {
             const result = await response.json();
 
             const tableBody = document.getElementById('aggregationResultTableBody');
-            tableBody.innerHTML = '';
+            while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
 
             if (result.data && result.data.length > 0) {
                 result.data.forEach(row => {
@@ -224,6 +233,7 @@ if (querySpeciesBtn) {
                 const tr = document.createElement('tr');
                 const td = document.createElement('td');
                 td.setAttribute('colspan', '2');
+                td.className = 'table-empty';
                 td.textContent = 'No species found meeting this criteria.';
                 tr.appendChild(td);
                 tableBody.appendChild(tr);

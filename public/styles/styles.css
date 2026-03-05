@@ -548,6 +548,14 @@ textarea {
     border-bottom: none;
 }
 
+.table-empty {
+    text-align: center;
+    padding: 32px 20px !important;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 15px;
+}
+
 /* ----------------------------------------------------------
    11. TABS
    ---------------------------------------------------------- */

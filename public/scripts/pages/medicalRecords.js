@@ -41,11 +41,20 @@ async function fetchAndDisplayMedicalRecordTable() {
     const tableBody = document.getElementById('medicalRecordTableBody');
     if (!tableBody) return;
 
-    tableBody.innerHTML = '';
+    while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
 
     try {
         const response = await apiFetch('/medical-records', { method: 'GET' });
         const records = await response.json();
+
+        if (!records || records.length === 0) {
+            const row = tableBody.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 6;
+            cell.className = 'table-empty';
+            cell.textContent = 'No medical records found.';
+            return;
+        }
 
         records.forEach(record => {
             const row = tableBody.insertRow();
@@ -91,7 +100,7 @@ async function fetchAndDisplayMedicalRecordTablePet(event) {
     const tableBody = document.getElementById('petRecordTableBody');
     if (!tableBody) return;
 
-    tableBody.innerHTML = '';
+    while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
 
     try {
         const response = await apiFetch('/view-pet-medical', {
@@ -103,6 +112,16 @@ async function fetchAndDisplayMedicalRecordTablePet(event) {
         });
 
         const data = await response.json();
+
+        if (!data.data || data.data.length === 0) {
+            const row = tableBody.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 6;
+            cell.className = 'table-empty';
+            cell.textContent = 'No records found for this pet.';
+            document.getElementById('petRecordTable').style.visibility = 'visible';
+            return;
+        }
 
         data.data.forEach(record => {
             const row = tableBody.insertRow();

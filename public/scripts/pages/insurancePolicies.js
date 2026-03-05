@@ -42,11 +42,20 @@ async function fetchAndDisplayInsurancePolicies() {
     const tableBody = document.getElementById('insuranceTableBody');
     if (!tableBody) return;
 
-    tableBody.innerHTML = '';
+    while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
 
     try {
         const response = await apiFetch('/insurance-policies', { method: 'GET' });
         const policies = await response.json();
+
+        if (!policies || policies.length === 0) {
+            const row = tableBody.insertRow();
+            const cell = row.insertCell(0);
+            cell.colSpan = 5;
+            cell.className = 'table-empty';
+            cell.textContent = 'No insurance policies found.';
+            return;
+        }
 
         policies.forEach(policy => {
             const row = tableBody.insertRow();

@@ -14,7 +14,17 @@ export function populateTableFromArrays(tableId, data) {
     const tableBody = tableElement.querySelector('tbody');
     if (!tableBody) return;
 
-    tableBody.innerHTML = '';
+    while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
+
+    if (!data || data.length === 0) {
+        const colCount = tableElement.querySelectorAll('thead th').length || 1;
+        const row = tableBody.insertRow();
+        const cell = row.insertCell(0);
+        cell.colSpan = colCount;
+        cell.className = 'table-empty';
+        cell.textContent = 'No records found.';
+        return;
+    }
 
     data.forEach(rowData => {
         const row = tableBody.insertRow();
@@ -37,7 +47,18 @@ export function populateTableFromObjects(tbodyId, data, keys) {
     const tableBody = document.getElementById(tbodyId);
     if (!tableBody) return;
 
-    tableBody.innerHTML = '';
+    while (tableBody.firstChild) tableBody.removeChild(tableBody.firstChild);
+
+    if (!data || data.length === 0) {
+        const table = tableBody.closest('table');
+        const colCount = table ? table.querySelectorAll('thead th').length : keys.length;
+        const row = tableBody.insertRow();
+        const cell = row.insertCell(0);
+        cell.colSpan = colCount;
+        cell.className = 'table-empty';
+        cell.textContent = 'No records found.';
+        return;
+    }
 
     data.forEach(item => {
         const row = tableBody.insertRow();
