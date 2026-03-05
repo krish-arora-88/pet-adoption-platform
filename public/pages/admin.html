@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Adoption Platform - Admin</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
+    <script type="module" src="../scripts/main.js"></script>
+    <script type="module" src="../scripts/pages/admin.js"></script>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="https://i.imgur.com/7Uh55Ey.png" alt="PetAdopt BC Logo">
+                <span>PetAdopt BC</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Home
+                </a>
+                <a href="/pages/pets.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="7" cy="14" r="2"/><circle cx="15" cy="14" r="2"/><path d="M11 16c-1.5 2-3 3.5-3 5a3 3 0 0 0 6 0c0-1.5-1.5-3-3-5z"/></svg>
+                    Browse Pets
+                </a>
+                <a href="/pages/adoptions.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    Adoptions
+                </a>
+                <a href="/pages/admin.html" class="active">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="db-status">
+                    <span id="dbStatusDot" class="status-dot"></span>
+                    <span class="status-label">Database</span>
+                </div>
+                <div class="auth-section">
+                    <span id="authStatus"></span>
+                    <a href="/pages/login.html" id="sidebarLoginLink">Login</a>
+                    <a href="#" id="sidebarLogoutLink" style="display:none;">Logout</a>
+                </div>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <h1 class="page-header">Admin Dashboard</h1>
+
+            <div class="tabs-container">
+                <div class="tab-list">
+                    <button class="tab-btn active" data-tab="tab-centers">Adoption Centers</button>
+                    <button class="tab-btn" data-tab="tab-veterinarians">Veterinarians</button>
+                    <button class="tab-btn" data-tab="tab-medical">Medical Records</button>
+                    <button class="tab-btn" data-tab="tab-species">Species</button>
+                    <button class="tab-btn" data-tab="tab-insurance">Insurance</button>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- TAB 1: Adoption Centers                                      -->
+                <!-- ============================================================ -->
+                <div class="tab-panel active" id="tab-centers">
+
+                    <!-- Adoption Center Table -->
+                    <h3>Adoption Centers</h3>
+                    <table id="adoption_center_table" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>License #</th>
+                                <th>Center Name</th>
+                                <th>Address</th>
+                                <th>Animal Capacity</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <!-- Add New Adoption Center -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Add New Adoption Center</h3>
+                        <form id="new_adoption_center">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="centerLicenseNumber">Center License Number</label>
+                                    <input type="number" id="centerLicenseNumber" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="centerName">Center Name</label>
+                                    <input type="text" id="centerName" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="address">Address</label>
+                                    <input type="text" id="address" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="animalCapacity">Animal Capacity</label>
+                                    <input type="number" id="animalCapacity" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Center</button>
+                            <div id="new_adoption_center_message" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- Update Adoption Center -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Update Adoption Center</h3>
+                        <form id="adoption_center_update">
+                            <div class="form-group">
+                                <label for="centerLicenseNumber_update">Center License Number</label>
+                                <input type="number" id="centerLicenseNumber_update" required>
+                                <small>Enter the license number of the center to update</small>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="centerName_update">Center Name</label>
+                                    <input type="text" id="centerName_update" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="address_update">Address</label>
+                                    <input type="text" id="address_update" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="animalCapacity_update">Animal Capacity</label>
+                                <input type="number" id="animalCapacity_update" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Center</button>
+                            <div id="adoption_update_status" class="message"></div>
+                        </form>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetACTable" class="btn btn-outline btn-sm">Reset Adoption Centers Table</button>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- TAB 2: Veterinarians                                         -->
+                <!-- ============================================================ -->
+                <div class="tab-panel" id="tab-veterinarians">
+
+                    <!-- Projection Query -->
+                    <h3>View Veterinarian Info</h3>
+                    <div class="form-card">
+                        <form id="projectVetInfo">
+                            <p>Select fields to display:</p>
+                            <div class="form-row">
+                                <label><input type="checkbox" name="vetInfo" value="VetLicenseNumber"> License #</label>
+                                <label><input type="checkbox" name="vetInfo" value="Name"> Name</label>
+                                <label><input type="checkbox" name="vetInfo" value="ClinicName"> Clinic</label>
+                                <label><input type="checkbox" name="vetInfo" value="ContactNumber"> Contact</label>
+                                <label><input type="checkbox" name="vetInfo" value="EmailAddress"> Email</label>
+                            </div>
+                            <button type="submit" class="btn btn-secondary" style="margin-top: 12px;">Show Selected</button>
+                        </form>
+                    </div>
+
+                    <table id="vet_table" class="data-table" style="margin-top: 24px;">
+                        <thead><tr></tr></thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <!-- Register New Vet -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Register New Veterinarian</h3>
+                        <form id="registerVet">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vetID">License Number</label>
+                                    <input type="number" id="vetID" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vetName">Name</label>
+                                    <input type="text" id="vetName" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="clinicName">Clinic Name</label>
+                                    <input type="text" id="clinicName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vetContact">Contact Number</label>
+                                    <input type="text" id="vetContact" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="vetEmail">Email Address</label>
+                                <input type="email" id="vetEmail" required>
+                            </div>
+                            <div class="form-group">
+                                <p>Specialty (coming soon):</p>
+                                <label><input type="checkbox" name="vetSpecialty" value="Dogs"> Dogs</label>
+                                <label><input type="checkbox" name="vetSpecialty" value="Cats"> Cats</label>
+                                <label><input type="checkbox" name="vetSpecialty" value="Birds"> Birds</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Register Vet</button>
+                            <div id="vet_register_status" class="message"></div>
+                            <div id="vet_species_status" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- Update Vet -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Update Veterinarian</h3>
+                        <form id="vet_update">
+                            <div class="form-group">
+                                <label for="vetLicense_update">License Number</label>
+                                <input type="number" id="vetLicense_update" required>
+                                <small>Enter the license number of the vet to update</small>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vetName_update">Name</label>
+                                    <input type="text" id="vetName_update" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="clinicName_update">Clinic Name</label>
+                                    <input type="text" id="clinicName_update" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="vetContact_update">Contact Number</label>
+                                    <input type="text" id="vetContact_update" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="vetEmail_update">Email Address</label>
+                                    <input type="email" id="vetEmail_update" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Vet</button>
+                            <div id="vet_update_status" class="message"></div>
+                        </form>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetVet" class="btn btn-outline btn-sm">Reset Vet Table</button>
+                        <div id="resetResultMsg" class="message"></div>
+                    </div>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- TAB 3: Medical Records                                       -->
+                <!-- ============================================================ -->
+                <div class="tab-panel" id="tab-medical">
+
+                    <!-- Add Medical Record -->
+                    <h3>Add Medical Record</h3>
+                    <div class="form-card">
+                        <form id="medicalRecordForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="med_petMicrochipID">Pet Microchip ID</label>
+                                    <input type="number" id="med_petMicrochipID" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="med_recordID">Record ID</label>
+                                    <input type="number" id="med_recordID" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="med_insurancePolicyNumber">Insurance Policy #</label>
+                                    <input type="number" id="med_insurancePolicyNumber" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="med_vaccinationStatus">Vaccination Status</label>
+                                    <input type="text" id="med_vaccinationStatus" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="med_healthCondition">Health Condition</label>
+                                <input type="text" id="med_healthCondition" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="med_vetNotes">Vet Notes</label>
+                                <input type="text" id="med_vetNotes">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Record</button>
+                            <div id="medical_record_form_message" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- All Medical Records Table -->
+                    <h3 style="margin-top: 24px;">All Medical Records</h3>
+                    <table id="medicalRecordTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Pet Microchip ID</th>
+                                <th>Record ID</th>
+                                <th>Insurance Policy #</th>
+                                <th>Vaccination Status</th>
+                                <th>Health Condition</th>
+                                <th>Vet Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="medicalRecordTableBody"></tbody>
+                    </table>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetMedicalRecordTable" class="btn btn-outline btn-sm">Reset Medical Records Table</button>
+                    </div>
+
+                    <!-- Pet-specific Medical Records -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>View Records by Pet</h3>
+                        <form id="accessPetMedical">
+                            <div class="form-group">
+                                <label for="petMicrochipMedical">Pet Microchip ID</label>
+                                <input type="number" id="petMicrochipMedical" required>
+                            </div>
+                            <button type="submit" class="btn btn-secondary">View Records</button>
+                        </form>
+                    </div>
+
+                    <table id="petRecordTable" class="data-table" style="margin-top: 24px; visibility: hidden;">
+                        <thead>
+                            <tr>
+                                <th>Pet Microchip ID</th>
+                                <th>Record ID</th>
+                                <th>Insurance Policy #</th>
+                                <th>Vaccination Status</th>
+                                <th>Health Condition</th>
+                                <th>Vet Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="petRecordTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- TAB 4: Species                                               -->
+                <!-- ============================================================ -->
+                <div class="tab-panel" id="tab-species">
+
+                    <!-- Species Form (Add / Update) -->
+                    <h3>Manage Species</h3>
+                    <div class="form-card">
+                        <form id="speciesForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="speciesName">Species Name</label>
+                                    <input type="text" id="speciesName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="housingSpace">Housing Space Required</label>
+                                    <input type="number" id="housingSpace" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="groomingRoutine">Grooming Routine</label>
+                                    <input type="text" id="groomingRoutine" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="dietType">Diet Type</label>
+                                    <input type="text" id="dietType" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Species</button>
+                            <div id="species_form_message" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- Species Table -->
+                    <h3 style="margin-top: 24px;">Species List</h3>
+                    <table id="speciesTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Species Name</th>
+                                <th>Housing Space</th>
+                                <th>Grooming Routine</th>
+                                <th>Diet Type</th>
+                                <th>Edit</th>
+                                <th>Delete</th>
+                            </tr>
+                        </thead>
+                        <tbody id="speciesTableBody"></tbody>
+                    </table>
+
+                    <!-- Species Dropdown -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Species Dropdown</h3>
+                        <div class="form-group">
+                            <label for="speciesSelect">Select Species</label>
+                            <select id="speciesSelect"></select>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetSpeciesTable" class="btn btn-outline btn-sm">Reset Species Table</button>
+                    </div>
+
+                    <!-- Aggregation Query -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Species with Minimum Pet Count</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="minPetCount">Minimum Number of Pets</label>
+                                <input type="number" id="minPetCount" value="1" min="0">
+                            </div>
+                            <div class="form-group" style="display: flex; align-items: flex-end;">
+                                <button type="button" id="querySpecies" class="btn btn-secondary">Query</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <table class="data-table" style="margin-top: 24px;">
+                        <thead>
+                            <tr>
+                                <th>Species Name</th>
+                                <th>Number of Pets</th>
+                            </tr>
+                        </thead>
+                        <tbody id="aggregationResultTableBody"></tbody>
+                    </table>
+
+                    <!-- Employee Form (client-side only) -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Center Employees (Local)</h3>
+                        <form id="employeeForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" id="firstName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" id="lastName" required>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="role">Role</label>
+                                    <input type="text" id="role" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="salary">Salary</label>
+                                    <input type="number" id="salary" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Employee</button>
+                        </form>
+                    </div>
+
+                    <table id="employeeTable" class="data-table" style="margin-top: 24px;">
+                        <thead>
+                            <tr>
+                                <th>First Name</th>
+                                <th>Last Name</th>
+                                <th>Role</th>
+                                <th>Salary</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeTableBody"></tbody>
+                    </table>
+                </div>
+
+                <!-- ============================================================ -->
+                <!-- TAB 5: Insurance                                             -->
+                <!-- ============================================================ -->
+                <div class="tab-panel" id="tab-insurance">
+
+                    <!-- Add Insurance Policy -->
+                    <h3>Add Insurance Policy</h3>
+                    <div class="form-card">
+                        <form id="insuranceForm">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="insurancePolicyNumber">Policy Number</label>
+                                    <input type="number" id="insurancePolicyNumber" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="policyLevel">Policy Level</label>
+                                    <input type="text" id="policyLevel" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="coverageAmount">Coverage Amount</label>
+                                <input type="number" id="coverageAmount" required>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="insuranceStartDate">Start Date</label>
+                                    <input type="date" id="insuranceStartDate" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="insuranceExpiration">Expiration Date</label>
+                                    <input type="date" id="insuranceExpiration" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Add Policy</button>
+                            <div id="insurance_form_message" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- Insurance Table -->
+                    <h3 style="margin-top: 24px;">Insurance Policies</h3>
+                    <table id="insuranceTable" class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Policy Number</th>
+                                <th>Policy Level</th>
+                                <th>Coverage Amount</th>
+                                <th>Start Date</th>
+                                <th>Expiration</th>
+                            </tr>
+                        </thead>
+                        <tbody id="insuranceTableBody"></tbody>
+                    </table>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetInsuranceTable" class="btn btn-outline btn-sm">Reset Insurance Table</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+</body>
+</html>
