@@ -1,92 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pets</title>
-    <script src="../scripts/scripts.js"></script>
+    <title>Browse Pets — PetAdopt BC</title>
     <link rel="stylesheet" href="../styles/styles.css">
     <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
+    <script type="module" src="../scripts/main.js"></script>
+    <script type="module" src="../scripts/pages/pets.js"></script>
 </head>
-
 <body>
-    <a href="/">
-        <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
-    </a>
-    <h1>Available Pets</h1>
-    <div class="filter-container">
-        <div class="filter-item">
-            <label for="speciesFilter">Filter by Species:</label>
-            <select id="speciesFilter">
-                <option value="all">All Species</option>
-                <option value="Dog">Dog</option>
-                <option value="Cat">Cat</option>
-                <option value="Bird">Bird</option>
-                <!-- Add more species as needed -->
-            </select>
-        </div>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="https://i.imgur.com/7Uh55Ey.png" alt="PetAdopt BC Logo">
+                <span>PetAdopt BC</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Home
+                </a>
+                <a href="/pages/pets.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="7" cy="14" r="2"/><circle cx="15" cy="14" r="2"/><path d="M11 16c-1.5 2-3 3.5-3 5a3 3 0 0 0 6 0c0-1.5-1.5-3-3-5z"/></svg>
+                    Browse Pets
+                </a>
+                <a href="/pages/adoptions.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    Adoptions
+                </a>
+                <a href="/pages/admin.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="db-status">
+                    <span id="dbStatusDot" class="status-dot"></span>
+                    <span class="status-label">Database</span>
+                </div>
+                <div class="auth-section">
+                    <span id="authStatus"></span>
+                    <a href="/pages/login.html" id="sidebarLoginLink">Login</a>
+                    <a href="#" id="sidebarLogoutLink" style="display:none;">Logout</a>
+                </div>
+            </div>
+        </aside>
 
-        <div class="filter-item">
-            <label for="ageMinFilter">Age Range:</label>
-            <input type="number" id="ageMinFilter" min="0" placeholder="Min Age" class="age-input">
-            <span>to</span>
-            <input type="number" id="ageMaxFilter" min="0" placeholder="Max Age" class="age-input">
-        </div>
+        <main class="main-content">
+            <h1 class="fade-in">Browse Pets</h1>
 
-        <button id="applyFilters">Apply Filters</button>
-        <button id="resetFilters">Reset Filters</button>
+            <!-- 1. Expandable panel — Register a New Pet -->
+            <div class="expandable-panel fade-in">
+                <button class="expandable-trigger" type="button">Register a New Pet</button>
+                <div class="expandable-content">
+                    <form id="new_pet" class="form-card">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="MicrochipID">Microchip ID</label>
+                                <input id="MicrochipID" placeholder="Microchip ID" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="petName">Name</label>
+                                <input id="petName" placeholder="Name" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="petAge">Age</label>
+                                <input id="petAge" placeholder="Age" type="number" min="0" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="breed">Breed</label>
+                                <input id="breed" placeholder="Breed" required>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="gender">Gender</label>
+                                <select id="gender">
+                                    <option value="F">Female</option>
+                                    <option value="M">Male</option>
+                                    <option value="I">Intersex</option>
+                                    <option value="O">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="speciesSelect">Species</label>
+                                <select id="speciesSelect" required></select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Register Pet</button>
+                        <div id="new_pet_message" class="message"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 2. Filter section -->
+            <div class="card fade-in">
+                <h3>Filter Pets</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="speciesFilter">Species</label>
+                        <select id="speciesFilter">
+                            <option value="all">All Species</option>
+                            <option value="Dog">Dog</option>
+                            <option value="Cat">Cat</option>
+                            <option value="Bird">Bird</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="ageMinFilter">Min Age</label>
+                        <input type="number" id="ageMinFilter" min="0" placeholder="Min Age">
+                    </div>
+                    <div class="form-group">
+                        <label for="ageMaxFilter">Max Age</label>
+                        <input type="number" id="ageMaxFilter" min="0" placeholder="Max Age">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <button id="applyFilters" class="btn btn-primary btn-sm">Apply Filters</button>
+                    <button id="resetFilters" class="btn btn-outline btn-sm">Reset Filters</button>
+                </div>
+            </div>
+
+            <!-- 3. Pet table -->
+            <div class="card fade-in">
+                <table id="pet_table" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Age</th>
+                            <th>Breed</th>
+                            <th>Gender</th>
+                            <th>Species</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+                <div class="form-row" style="margin-top: 12px;">
+                    <button id="see_pets" class="btn btn-outline">Refresh Pets</button>
+                    <button id="resetPetTable" class="btn btn-outline btn-sm">Reset Table</button>
+                </div>
+            </div>
+
+            <!-- 4. Stats section -->
+            <div class="card fade-in">
+                <h3>Pet Statistics</h3>
+                <button id="viewPetStats" class="btn btn-secondary btn-sm">View Average Available Pet Ages</button>
+                <table id="petStatsTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Species</th>
+                            <th>Average Age</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+
+                <button id="speciesAgeStats" class="btn btn-secondary btn-sm" style="margin-top: 16px;">Species Age Stats</button>
+                <table id="speciesStatsTable" class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Species</th>
+                            <th>Average Age</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </main>
     </div>
-
-    <table id="pet_table" border="1">
-        <thead>
-            <tr>
-                <!--Table head, need to be adjusted accordingly to align with your own.-->
-                <th>ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Breed</th>
-                <th>Gender</th>
-                <th>Species</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-    <button id="see_pets">See Pets</button>
-    <button id="resetPetTable">Reset Table</button>
-    <br>
-    </div>
-
-    <div class="responsibility">
-        <h2>View Oldest Pets</h2>
-        <button id="viewPetStats">View Average Available Pet Ages</button>
-        <br>
-        <table id="petStatsTable" border="1">
-            <thead>
-                <tr>
-                    <th>Species</th>
-                    <th>Average Age</th>
-                </tr>
-            </thead>
-            <tbody>
-            </tbody>
-        </table>
-    </div>
-
-    <button id="speciesAgeStats">Show Species Age Statistics</button>
-
-    <table id="speciesStatsTable">
-        <thead>
-            <tr>
-                <th>Species</th>
-                <th>Average Age</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-
-    <p><a href="../index.html">Return Home</a></p>
 </body>
-
 </html>
