@@ -1,108 +1,237 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pet Adoption Platform - Manage Adoptions</title>
-    <script src="../scripts/scripts.js"></script>
+    <title>Pet Adoption Platform - Adoptions</title>
     <link rel="stylesheet" href="../styles/styles.css">
     <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
+    <script type="module" src="../scripts/main.js"></script>
+    <script type="module" src="../scripts/pages/adoptions.js"></script>
 </head>
-
 <body>
-    <a href="/">
-        <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px">
-    </a>
-    <h1>Manage Adoptions</h1>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="https://i.imgur.com/7Uh55Ey.png" alt="PetAdopt BC Logo">
+                <span>PetAdopt BC</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Home
+                </a>
+                <a href="/pages/pets.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="7" cy="14" r="2"/><circle cx="15" cy="14" r="2"/><path d="M11 16c-1.5 2-3 3.5-3 5a3 3 0 0 0 6 0c0-1.5-1.5-3-3-5z"/></svg>
+                    Browse Pets
+                </a>
+                <a href="/pages/adoptions.html" class="active">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    Adoptions
+                </a>
+                <a href="/pages/admin.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="db-status">
+                    <span id="dbStatusDot" class="status-dot"></span>
+                    <span class="status-label">Database</span>
+                </div>
+                <div class="auth-section">
+                    <span id="authStatus"></span>
+                    <a href="/pages/login.html" id="sidebarLoginLink">Login</a>
+                    <a href="#" id="sidebarLogoutLink" style="display:none;">Logout</a>
+                </div>
+            </div>
+        </aside>
 
-    <!-- Current Adoptions Section -->
-    <section class="adoption-section">
-        <h2>Current Adoptions</h2>
-        <div id="resetAdoptionResultMsg" class="message"></div>
-        <button id="resetAdoptionTable" class="action-button">Reset Adoption Table</button>
-        <table id="adoption_table" class="tables-style" border="1">
-            <thead>
-                <tr>
-                    <th>PetMicrochipID</th>
-                    <th>AdoptionDate</th>
-                    <th>ClientID</th>
-                    <th>CenterLicenseNumber</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Adoption records will be populated here dynamically -->
-            </tbody>
-        </table>
-    </section>
+        <main class="main-content">
+            <h1>Adoptions</h1>
 
-    <!-- New Adoption Form Section -->
-    <section class="adoption-section">
-        <h2>Register New Adoption</h2>
-        <form id="new_adoption">
-            <div class="form-group">
-                <label for="petMicrochipID">Pet Microchip ID:</label>
-                <input type="number" id="petMicrochipID" name="petMicrochipID" required>
-            </div>
-            <div class="form-group">
-                <label for="adoptionDate">Adoption Date (YYYYMMDD):</label>
-                <input type="text" id="adoptionDate" name="adoptionDate" placeholder="YYYYMMDD" pattern="[0-9]{8}"
-                    required>
-            </div>
-            <div class="form-group">
-                <label for="clientID">Client ID:</label>
-                <input type="number" id="clientID" name="clientID" required>
-            </div>
-            <div class="form-group">
-                <label for="centerLicenseNumber">Center License Number:</label>
-                <input type="number" id="centerLicenseNumber" name="centerLicenseNumber" required>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="submit-button">Register Adoption</button>
-            </div>
-            <div id="new_adoption_message" class="message"></div>
-        </form>
-    </section>
+            <div class="tabs-container">
+                <div class="tab-list">
+                    <button class="tab-btn active" data-tab="tab-adoptions">Adoption Records</button>
+                    <button class="tab-btn" data-tab="tab-clients">Client Accounts</button>
+                </div>
 
-    <!-- Update Adoption Form Section -->
-    <section class="adoption-section">
-        <h2>Update Adoption Details</h2>
-        <form id="adoption_update">
-            <div class="form-group">
-                <label for="petMicrochipID_update">Pet Microchip ID:</label>
-                <input type="number" id="petMicrochipID_update" name="petMicrochipID_update" required>
-                <small>Enter the Pet Microchip ID of the adoption you want to update</small>
-            </div>
-            <div class="form-group">
-                <label for="adoptionDate_update">New Adoption Date (YYYYMMDD):</label>
-                <input type="text" id="adoptionDate_update" name="adoptionDate_update" placeholder="YYYYMMDD"
-                    pattern="[0-9]{8}" required>
-            </div>
-            <div class="form-group">
-                <label for="clientID_update">New Client ID:</label>
-                <input type="number" id="clientID_update" name="clientID_update" required>
-            </div>
-            <div class="form-group">
-                <label for="centerLicenseNumber_update">New Center License Number:</label>
-                <input type="number" id="centerLicenseNumber_update" name="centerLicenseNumber_update" required>
-            </div>
-            <div class="form-group">
-                <button type="submit" class="submit-button">Update Adoption</button>
-            </div>
-            <div id="adoption_update_status" class="message"></div>
-        </form>
-    </section>
+                <!-- TAB 1: Adoption Records -->
+                <div class="tab-panel active" id="tab-adoptions">
+                    <!-- Adoption table -->
+                    <table id="adoption_table" class="data-table">
+                        <thead><tr>
+                            <th>Pet Microchip ID</th><th>Adoption Date</th><th>Client ID</th><th>Center License #</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
 
-    <!-- Navigation Links -->
-    <section class="navigation">
-        <h2>Navigation</h2>
-        <ul>
-            <li><a href="../index.html">Return Home</a></li>
-            <li><a href="pets.html">Manage Pets</a></li>
-            <li><a href="clients.html">Manage Clients</a></li>
-            <li><a href="centers.html">Manage Adoption Centers</a></li>
-        </ul>
-    </section>
+                    <!-- Register New Adoption form -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Register New Adoption</h3>
+                        <form id="new_adoption">
+                            <div class="form-group">
+                                <label for="petMicrochipID">Pet Microchip ID</label>
+                                <input type="number" id="petMicrochipID" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="adoptionDate">Adoption Date (YYYYMMDD)</label>
+                                <input type="text" id="adoptionDate" placeholder="YYYYMMDD" pattern="[0-9]{8}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="clientID">Client ID</label>
+                                <input type="number" id="clientID" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="centerLicenseNumber">Center License Number</label>
+                                <input type="number" id="centerLicenseNumber" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Register Adoption</button>
+                            <div id="new_adoption_message" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- Update Adoption form -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Update Adoption Details</h3>
+                        <form id="adoption_update">
+                            <div class="form-group">
+                                <label for="petMicrochipID_update">Pet Microchip ID</label>
+                                <input type="number" id="petMicrochipID_update" required>
+                                <small>Enter the Pet Microchip ID of the adoption to update</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="adoptionDate_update">New Adoption Date (YYYYMMDD)</label>
+                                <input type="text" id="adoptionDate_update" placeholder="YYYYMMDD" pattern="[0-9]{8}" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="clientID_update">New Client ID</label>
+                                <input type="number" id="clientID_update" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="centerLicenseNumber_update">New Center License Number</label>
+                                <input type="number" id="centerLicenseNumber_update" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Adoption</button>
+                            <div id="adoption_update_status" class="message"></div>
+                        </form>
+                    </div>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetAdoptionTable" class="btn btn-outline btn-sm">Reset Adoption Table</button>
+                        <div id="resetAdoptionResultMsg" class="message"></div>
+                    </div>
+                </div>
+
+                <!-- TAB 2: Client Accounts -->
+                <div class="tab-panel" id="tab-clients">
+                    <!-- Create Account with DOGGY BUTTON -->
+                    <div class="form-card">
+                        <h3>Create Account</h3>
+                        <form id="sign_up">
+                            <div class="form-group">
+                                <label for="ClientFirstName">First Name</label>
+                                <input id="ClientFirstName" placeholder="First Name" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientLastName">Last Name</label>
+                                <input id="ClientLastName" placeholder="Last Name" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientAddress">Address</label>
+                                <input id="ClientAddress" placeholder="Address" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientContact">Phone Number</label>
+                                <input id="ClientContact" placeholder="Phone Number" maxlength="20">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientType">Account Type</label>
+                                <select id="ClientType">
+                                    <option value="Donor">Donor</option>
+                                    <option value="Owner">Adopter</option>
+                                </select>
+                            </div>
+
+                            <!-- DOGGY BUTTON -->
+                            <div class="container">
+                                <div class="button-container">
+                                    <div class="dog">
+                                        <div class="tail"></div>
+                                        <div class="body"></div>
+                                        <div class="head">
+                                            <div class="eyes">
+                                                <div class="left"></div>
+                                                <div class="right"></div>
+                                            </div>
+                                            <div class="nuzzle">
+                                                <div class="mouth">
+                                                    <div class="tongue"></div>
+                                                </div>
+                                                <div class="nose">
+                                                    <div class="nostrils"></div>
+                                                    <div class="highlight"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="ears">
+                                            <div class="left"></div>
+                                            <div class="right"></div>
+                                        </div>
+                                    </div>
+                                    <button type="submit">Create Account</button>
+                                    <div class="paw"></div>
+                                    <div class="paw top"></div>
+                                </div>
+                            </div>
+                        </form>
+                        <p id="sign_up_status" class="message"></p>
+                    </div>
+
+                    <!-- Update Account -->
+                    <div class="form-card" style="margin-top: 24px;">
+                        <h3>Update Account</h3>
+                        <form id="client_update">
+                            <div class="form-group">
+                                <label for="ClientNumber">Account ID</label>
+                                <input id="ClientNumber" placeholder="Account ID" maxlength="10">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientFirstName_update">First Name</label>
+                                <input id="ClientFirstName_update" placeholder="First Name" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientLastName_update">Last Name</label>
+                                <input id="ClientLastName_update" placeholder="Last Name" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientAddress_update">Address</label>
+                                <input id="ClientAddress_update" placeholder="Address" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="ClientContact_update">Phone Number</label>
+                                <input id="ClientContact_update" placeholder="Phone Number" maxlength="20">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Account</button>
+                            <div id="update_status" class="message"></div>
+                        </form>
+                    </div>
+
+                    <!-- Client Table -->
+                    <table id="client_table" class="data-table" style="margin-top: 24px;">
+                        <thead><tr>
+                            <th>ID</th><th>First Name</th><th>Last Name</th><th>Address</th><th>Phone Number</th>
+                        </tr></thead>
+                        <tbody></tbody>
+                    </table>
+
+                    <div style="margin-top: 16px;">
+                        <button id="resetClient" class="btn btn-outline btn-sm">Reset Client Table</button>
+                        <p id="resetResultMsg" class="message"></p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
 </body>
-
 </html>
