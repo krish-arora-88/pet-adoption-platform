@@ -1,77 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pet Adoption Platform</title>
-    <script src="scripts/scripts.js"></script>
     <link rel="stylesheet" href="styles/styles.css">
     <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
+    <script type="module" src="scripts/main.js"></script>
+    <script type="module" src="scripts/pages/home.js"></script>
 </head>
-
 <body>
-    <div class="page-header">
-        <a href="/">
-            <img src="https://i.imgur.com/7Uh55Ey.png" alt="Site Logo" class="site-logo" size="100px" />
-        </a>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <img src="https://i.imgur.com/7Uh55Ey.png" alt="PetAdopt BC Logo">
+                <span>PetAdopt BC</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="/">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                    Home
+                </a>
+                <a href="/pages/pets.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="4" cy="8" r="2"/><circle cx="7" cy="14" r="2"/><circle cx="15" cy="14" r="2"/><path d="M11 16c-1.5 2-3 3.5-3 5a3 3 0 0 0 6 0c0-1.5-1.5-3-3-5z"/></svg>
+                    Browse Pets
+                </a>
+                <a href="/pages/adoptions.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+                    Adoptions
+                </a>
+                <a href="/pages/admin.html">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    Admin
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="db-status">
+                    <span id="dbStatusDot" class="status-dot"></span>
+                    <span class="status-label">Database</span>
+                </div>
+                <div class="auth-section">
+                    <span id="authStatus"></span>
+                    <a href="/pages/login.html" id="sidebarLoginLink">Login</a>
+                    <a href="#" id="sidebarLogoutLink" style="display:none;">Logout</a>
+                </div>
+            </div>
+        </aside>
 
-        <h1 class="db-connection">Database Connection Status:
-            <!-- An in-line placeholder to display connection status. -->
-            <span id="dbStatus"> </span>
-            <!-- A loading GIF, will be hided once get the status. -->
-            <img id="loadingGif" class="loading" class="loading-gif" src="https://i.imgur.com/dA93pzk.gif"
-                alt="Loading...">
-        </h1>
+        <main class="main-content">
+            <section class="hero fade-in">
+                <div class="hero-content">
+                    <h1 class="hero-title">Find Your New<br>Best Friend</h1>
+                    <p class="hero-subtitle">Give a loving pet a forever home. Browse available pets from adoption centers across British Columbia.</p>
+                    <a href="/pages/pets.html" class="btn btn-primary btn-lg">Browse Pets</a>
+                </div>
+                <div class="hero-blobs">
+                    <div class="blob blob-1"></div>
+                    <div class="blob blob-2"></div>
+                    <div class="blob blob-3"></div>
+                </div>
+            </section>
+
+            <section class="stats-ribbon fade-in">
+                <div class="stat-item">
+                    <span class="stat-number" id="statPets">--</span>
+                    <span class="stat-label">Pets Available</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="statAdoptions">--</span>
+                    <span class="stat-label">Happy Adoptions</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="statCenters">--</span>
+                    <span class="stat-label">Adoption Centers</span>
+                </div>
+            </section>
+
+            <section class="section fade-in">
+                <h2>Featured Pets</h2>
+                <div class="scroll-row" id="featuredPets"></div>
+            </section>
+
+            <section class="section fade-in">
+                <h2>Get Started</h2>
+                <div class="card-grid card-grid-3">
+                    <a href="/pages/pets.html" class="card link-card">
+                        <div class="link-card-icon">&#x1F43E;</div>
+                        <h3>Pet Owners</h3>
+                        <p>Browse pets, manage your account, view adoptions</p>
+                    </a>
+                    <a href="/pages/admin.html" class="card link-card">
+                        <div class="link-card-icon">&#x1F3E5;</div>
+                        <h3>Center Staff</h3>
+                        <p>Manage species, centers, employees, and records</p>
+                    </a>
+                    <a href="/pages/admin.html#veterinarians" class="card link-card">
+                        <div class="link-card-icon">&#x1FA7A;</div>
+                        <h3>Veterinarians</h3>
+                        <p>Register practice, manage medical records</p>
+                    </a>
+                </div>
+            </section>
+        </main>
     </div>
-    <h1>Welcome to the BC Pet Adoption Platform!</h1>
-    <div id="menu_options">
-        <div class="responsibility">
-            <h2>For Pet Owners: </h2>
-            <p><a href="pages/signup.html">Sign up or Manage Account</a></p>
-            <p><a href="pages/pets.html">Available Pets</a></p>
-            <p><a href="pages/managePets.html">Manage Pets</a></p>
-            <p><a href="pages/adoptioncentres.html">View Adoption Centres</a></p>
-            <p><a href="pages/Veterenarians.html">View Available Vets</a></p>
-            <p><a href="pages/adoptions.html">Manage your Adoptions</a></p>
-            <p><a href="pages/insurancePolicies.html">Manage Insurance Policies</a></p>
-            </br>
-        </div>
-        <div class="responsibility">
-            <h2>For Adoption Center Management:</h2>
-            <p><a href="pages/CenterPet.html">Manage Pet Care</a></p>
-            <p><a href="pages/CenterEmployees.html">Manage Employees</a></p>
-            </br>
-        </div>
-
-        <div class="responsibility">
-            <h2>For Veterenarians</h2>
-            <p><a href="pages/VetPractice.html">Manage Practice</a></p>
-            <p><a href="pages/VetMedicalRecord.html">Manage Medical Records</a></p>
-            </br>
-        </div>
-
-    </div>
-    <h2>Adopt a Pet!</h2>
-    <table id="pet_table" border="1">
-        <thead>
-            <tr>
-                <!--Table head, need to be adjusted accordingly to align with your own.-->
-                <th>ID</th>
-                <th>Name</th>
-                <th>Age</th>
-                <th>Breed</th>
-                <th>Gender</th>
-                <th>Species</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-
-    <br>
-    <button id="see_pets">See pets</button>
-
 </body>
-
 </html>
