@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Adoption Platform - Login</title>
+    <link rel="stylesheet" href="../styles/styles.css">
+    <link rel="icon" type="image/png" href="https://i.imgur.com/7Uh55Ey.png">
+    <script type="module" src="../scripts/auth.js"></script>
+</head>
+<body>
+    <div class="auth-layout">
+        <div class="auth-card">
+            <div class="sidebar-logo">
+                <img src="https://i.imgur.com/7Uh55Ey.png" alt="PetAdopt BC Logo">
+                <span>PetAdopt BC</span>
+            </div>
+            <h1>Welcome Back</h1>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">Login</button>
+                <div id="loginMessage" class="message"></div>
+            </form>
+            <p style="text-align:center; margin-top:16px;">
+                Don't have an account? <a href="register.html">Register here</a>
+            </p>
+        </div>
+    </div>
+</body>
+</html>
