@@ -1,13 +1,17 @@
 const express = require('express');
 const appService = require('./appService');
+const { requireAuth, requireAdmin } = require('./middleware/auth');
+const { validate } = require('./middleware/validate');
+const schemas = require('./validation/schemas');
 
 const router = express.Router();
 
 // ----------------------------------------------------------
-// API endpoints
-// Modify or extend these routes based on your project's needs.
+// Database Connection
+// ----------------------------------------------------------
+
 router.get('/check-db-connection', async (req, res) => {
-    const isConnect = await appService.testOracleConnection();
+    const isConnect = await appService.testConnection();
     if (isConnect) {
         res.send('Connected');
     } else {
@@ -15,11 +19,11 @@ router.get('/check-db-connection', async (req, res) => {
     }
 });
 
-// ======================================================================
-// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
-// ======================================================================
+// ----------------------------------------------------------
+// Pet (PetMicrochipID, Name, Age, Breed, Gender, SpeciesName)
+// ----------------------------------------------------------
 
-router.get('/pet-table', async (req, res) => {
+router.get('/pet-table', validate(schemas.petTableQuerySchema, 'query'), async (req, res) => {
     const species = req.query.species;
     const minAge = req.query.minAge;
     const maxAge = req.query.maxAge;
@@ -32,7 +36,7 @@ router.get('/get-pet-stats', async (req, res) => {
     res.json({ data: tableContent });
 });
 
-router.post("/initiateNewPet", async (req, res) => {
+router.post("/initiateNewPet", requireAuth, requireAdmin, async (req, res) => {
     const initiateResult = await appService.initiateNewPet();
     if (initiateResult) {
         res.json({ success: true });
@@ -41,13 +45,14 @@ router.post("/initiateNewPet", async (req, res) => {
     }
 });
 
-router.post("/insert-new-pet", async (req, res) => {
-    const { MicrochipID, Name, Age, Breed, Gender, SpeciesName } = req.body;
-    const insertResult = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName);
-    if (insertResult) {
-        res.json({ success: true });
-    } else {
-        res.status(500).json({ success: false });
+router.post("/insert-new-pet", validate(schemas.insertPetSchema), requireAuth, async (req, res) => {
+    try {
+        const { MicrochipID, Name, Age, Breed, Gender, SpeciesName } = req.body;
+        const success = await appService.insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName);
+        res.json({ success });
+    } catch (error) {
+        console.error('Error inserting new pet:', error);
+        res.status(500).json({ error: 'Error inserting new pet' });
     }
 });
 
@@ -60,17 +65,16 @@ router.get('/species-age-stats', async (req, res) => {
     }
 });
 
-// ======================================================================
-// =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
-// LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
-// ======================================================================
+// ----------------------------------------------------------
+// Client (ClientID, FirstName, LastName, ClientAddress, ClientContact)
+// ----------------------------------------------------------
 
 router.get('/client-table', async (req, res) => {
     const tableContent = await appService.fetchClientTableFromDb();
     res.json({ data: tableContent });
 });
 
-router.post("/initiateNewClient", async (req, res) => {
+router.post("/initiateNewClient", requireAuth, requireAdmin, async (req, res) => {
     const initiateResult = await appService.initiateNewClient();
     if (initiateResult) {
         res.json({ success: true });
@@ -79,7 +83,7 @@ router.post("/initiateNewClient", async (req, res) => {
     }
 });
 
-router.post("/insert-new-client", async (req, res) => {
+router.post("/insert-new-client", validate(schemas.insertClientSchema), requireAuth, async (req, res) => {
     const { FirstName, LastName, ClientAddress, ClientContact } = req.body;
     const insertResult = await appService.insertNewClient(FirstName, LastName, ClientAddress, ClientContact);
     if (insertResult !== false) {
@@ -95,7 +99,7 @@ router.post("/insert-new-client", async (req, res) => {
     }
 });
 
-router.post("/update-client", async (req, res) => {
+router.post("/update-client", validate(schemas.updateClientSchema), requireAuth, async (req, res) => {
     const { clientId, FirstName, LastName, ClientAddress, ClientContact } = req.body;
     const updateResult = await appService.updateClient(clientId, FirstName, LastName, ClientAddress, ClientContact);
     if (updateResult) {
@@ -105,25 +109,17 @@ router.post("/update-client", async (req, res) => {
     }
 });
 
+// ----------------------------------------------------------
+// Veterinarian (VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress)
+// ----------------------------------------------------------
 
-// ===========================================================================================
-// VeterinarianSpecializesInSpecies(VetLicenseNumber: INTEGER(10), SpeciesName: VARCHAR)
-// Veterinarian(VetLicenseNumber: INTEGER(10), Name: VARCHAR NOT NULL, ClinicName: VARCHAR, 
-// ContactNumber: INTEGER, EmailAddress: VARCHAR)
-// ===========================================================================================
-
-router.post("/insert-new-vet", async (req, res) => {
+router.post("/insert-new-vet", validate(schemas.insertVetSchema), requireAuth, async (req, res) => {
     const { VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress } = req.body;
     const insertResult = await appService.insertNewVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress);
-    if (insertResult !== false) {
-        res.json({
-            success: true,
-        });
+    if (insertResult) {
+        res.json({ success: true });
     } else {
-        res.status(500).json({
-            success: false,
-            message: "Failed to create account"
-        });
+        res.status(500).json({ success: false, message: "Failed to register veterinarian" });
     }
 });
 
@@ -132,7 +128,7 @@ router.get('/vet-table', async (req, res) => {
     res.json({ data: tableContent });
 });
 
-router.post("/initiateNewVet", async (req, res) => {
+router.post("/initiateNewVet", requireAuth, requireAdmin, async (req, res) => {
     const initiateResult = await appService.initiateNewVet();
     if (initiateResult) {
         res.json({ success: true });
@@ -141,7 +137,7 @@ router.post("/initiateNewVet", async (req, res) => {
     }
 });
 
-router.post("/update-vet", async (req, res) => {
+router.post("/update-vet", validate(schemas.updateVetSchema), requireAuth, async (req, res) => {
     const { VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress } = req.body;
     const updateResult = await appService.updateVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress);
     if (updateResult) {
@@ -151,28 +147,23 @@ router.post("/update-vet", async (req, res) => {
     }
 });
 
-// medical record
-
-router.post("/view-pet-medical", async (req, res) => {
+router.post("/view-pet-medical", validate(schemas.viewPetMedicalSchema), requireAuth, async (req, res) => {
     const { PetMicrochipID } = req.body;
     const tableContent = await appService.fetchPetMedical(PetMicrochipID);
     res.json({ data: tableContent });
 });
 
-
-
-router.post("/vet-table-project", async (req, res) => {
+router.post("/vet-table-project", validate(schemas.vetTableProjectSchema), requireAuth, async (req, res) => {
     const { selectors } = req.body;
     const tableContent = await appService.fetchVetProject(selectors);
     res.json({ data: tableContent });
 });
 
+// ----------------------------------------------------------
+// Adoption Center (CenterLicenseNumber, CenterName, Address, AnimalCapacity)
+// ----------------------------------------------------------
 
-
-// ======================================================================
-// =========== AdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity)
-// ======================================================================
-router.post("/initiateNewAdoptionCenter", async (req, res) => {
+router.post("/initiateNewAdoptionCenter", requireAuth, requireAdmin, async (req, res) => {
     const initiateResult = await appService.initiateNewAdoptionCenter();
     if (initiateResult) {
         res.json({ success: true });
@@ -181,38 +172,24 @@ router.post("/initiateNewAdoptionCenter", async (req, res) => {
     }
 });
 
-
 router.get("/adoption-center-table", async (req, res) => {
     const tableContent = await appService.fetchAdoptionCenterTableFromDb();
     res.json({ data: tableContent });
 });
 
-router.post("/insert-new-adoption-center", async (req, res) => {
+router.post("/insert-new-adoption-center", validate(schemas.insertAdoptionCenterSchema), requireAuth, async (req, res) => {
     const { CenterLicenseNumber, CenterName, Address, AnimalCapacity } = req.body;
-    const insertResult = await appService.insertNewAdoptionCenter(
-        CenterLicenseNumber,
-        CenterName,
-        Address,
-        AnimalCapacity
-    );
+    const insertResult = await appService.insertNewAdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity);
     if (insertResult) {
         res.json({ success: true });
     } else {
-        res.status(500).json({
-            success: false,
-            message: "Failed to create adoption center"
-        });
+        res.status(500).json({ success: false, message: "Failed to create adoption center" });
     }
 });
 
-router.post("/update-adoption-center", async (req, res) => {
+router.post("/update-adoption-center", validate(schemas.updateAdoptionCenterSchema), requireAuth, async (req, res) => {
     const { CenterLicenseNumber, CenterName, Address, AnimalCapacity } = req.body;
-    const updateResult = await appService.updateAdoptionCenter(
-        CenterLicenseNumber,
-        CenterName,
-        Address,
-        AnimalCapacity
-    );
+    const updateResult = await appService.updateAdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity);
     if (updateResult) {
         res.json({ success: true });
     } else {
@@ -220,12 +197,16 @@ router.post("/update-adoption-center", async (req, res) => {
     }
 });
 
+// ----------------------------------------------------------
+// Adoption (PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber)
+// ----------------------------------------------------------
+
 router.get('/adoption-table', async (req, res) => {
     const tableContent = await appService.fetchAdoptionTableFromDb();
     res.json({ data: tableContent });
 });
 
-router.post("/initiateNewAdoption", async (req, res) => {
+router.post("/initiateNewAdoption", requireAuth, requireAdmin, async (req, res) => {
     const initiateResult = await appService.initiateNewAdoption();
     if (initiateResult) {
         res.json({ success: true });
@@ -234,34 +215,19 @@ router.post("/initiateNewAdoption", async (req, res) => {
     }
 });
 
-router.post("/insert-new-adoption", async (req, res) => {
+router.post("/insert-new-adoption", validate(schemas.insertAdoptionSchema), requireAuth, async (req, res) => {
     const { PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber } = req.body;
-    const insertResult = await appService.insertNewAdoption(
-        PetMicrochipID,
-        AdoptionDate,
-        ClientID,
-        CenterLicenseNumber
-    );
-
+    const insertResult = await appService.insertNewAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber);
     if (insertResult) {
         res.json({ success: true });
     } else {
-        res.status(500).json({
-            success: false,
-            message: "Failed to create adoption record"
-        });
+        res.status(500).json({ success: false, message: "Failed to create adoption record" });
     }
 });
 
-router.post("/update-adoption", async (req, res) => {
+router.post("/update-adoption", validate(schemas.updateAdoptionSchema), requireAuth, async (req, res) => {
     const { PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber } = req.body;
-    const updateResult = await appService.updateAdoption(
-        PetMicrochipID,
-        AdoptionDate,
-        ClientID,
-        CenterLicenseNumber
-    );
-
+    const updateResult = await appService.updateAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber);
     if (updateResult) {
         res.json({ success: true });
     } else {
@@ -269,7 +235,7 @@ router.post("/update-adoption", async (req, res) => {
     }
 });
 
-router.get('/query-species', async (req, res) => {
+router.get('/query-species', validate(schemas.querySpeciesQuerySchema, 'query'), async (req, res) => {
     const minCount = parseInt(req.query.minCount, 10) || 0;
     try {
         const rows = await appService.getSpeciesWithMinPets(minCount);
@@ -280,42 +246,143 @@ router.get('/query-species', async (req, res) => {
     }
 });
 
-// // Demotable, not used in app but here for reference
-// router.post("/update-name-demotable", async (req, res) => {
-//     const { oldName, newName } = req.body;
-//     const updateResult = await appService.updateNameDemotable(oldName, newName);
-//     if (updateResult) {
-//         res.json({ success: true });
-//     } else {
-//         res.status(500).json({ success: false });
-//     }
-// });
+// ----------------------------------------------------------
+// Species (speciesName, HousingSpaceRequired, GroomingRoutine, DietType)
+// ----------------------------------------------------------
 
-// router.get('/count-demotable', async (req, res) => {
-//     const tableCount = await appService.countDemotable();
-//     if (tableCount >= 0) {
-//         res.json({
-//             success: true,
-//             count: tableCount
-//         });
-//     } else {
-//         res.status(500).json({
-//             success: false,
-//             count: tableCount
-//         });
-//     }
-// });
+router.get('/species-list', async (req, res) => {
+    try {
+        const rows = await appService.fetchSpeciesList();
+        res.json(rows);
+    } catch (error) {
+        console.error('Error fetching species:', error);
+        res.status(500).json({ error: 'Error fetching species' });
+    }
+});
 
-// router.post("/initiate-demotable", async (req, res) => {
-//     const initiateResult = await appService.initiateDemotable();
-//     if (initiateResult) {
-//         res.json({ success: true });
-//     } else {
-//         res.status(500).json({ success: false });
-//     }
-// });
+router.post('/insert-new-species', validate(schemas.insertSpeciesSchema), requireAuth, async (req, res) => {
+    try {
+        const { speciesName, housingSpace, groomingRoutine, dietType } = req.body;
+        const success = await appService.insertNewSpecies(speciesName, housingSpace, groomingRoutine, dietType);
+        res.json({ success });
+    } catch (error) {
+        console.error('Error inserting new species:', error);
+        res.status(500).json({ error: 'Error inserting species' });
+    }
+});
 
+router.post('/initiateNewSpecies', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const success = await appService.initiateSpeciesTable();
+        res.json({ success });
+    } catch (error) {
+        console.error("Error initiating species table:", error);
+        res.status(500).json({ error: "Error initiating species table" });
+    }
+});
 
+router.post('/clearSpeciesTable', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const success = await appService.clearSpeciesTable();
+        res.json({ success });
+    } catch (error) {
+        console.error("Error clearing species table:", error);
+        res.status(500).json({ error: "Error clearing species table" });
+    }
+});
 
+router.post('/update-species', validate(schemas.updateSpeciesSchema), requireAuth, async (req, res) => {
+    try {
+        const { speciesName, housingSpace, groomingRoutine, dietType } = req.body;
+        const success = await appService.updateSpecies(speciesName, housingSpace, groomingRoutine, dietType);
+        res.json({ success });
+    } catch (error) {
+        console.error("Error updating species:", error);
+        res.status(500).json({ error: "Error updating species" });
+    }
+});
+
+router.post('/delete-species', validate(schemas.deleteSpeciesSchema), requireAuth, async (req, res) => {
+    try {
+        const { speciesName } = req.body;
+        const success = await appService.deleteSpecies(speciesName);
+        res.json({ success });
+    } catch (error) {
+        console.error("Error deleting species:", error);
+        res.status(500).json({ error: "Error deleting species" });
+    }
+});
+
+// ----------------------------------------------------------
+// Insurance Policy
+// ----------------------------------------------------------
+
+router.post('/initiateNewInsurancePolicy', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const success = await appService.initiateInsurancePolicyTable();
+        res.json({ success });
+    } catch (error) {
+        console.error("Error initiating insurance policy table:", error);
+        res.status(500).json({ error: "Error initiating insurance policy table" });
+    }
+});
+
+router.post('/insert-new-insurance-policy', validate(schemas.insertInsurancePolicySchema), requireAuth, async (req, res) => {
+    try {
+        const { InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration } = req.body;
+        const success = await appService.insertNewInsurancePolicy(
+            InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration
+        );
+        res.json({ success });
+    } catch (error) {
+        console.error("Error inserting new insurance policy:", error);
+        res.status(500).json({ error: "Error inserting new insurance policy" });
+    }
+});
+
+router.get('/insurance-policies', async (req, res) => {
+    try {
+        const rows = await appService.fetchInsurancePolicyList();
+        res.json(rows);
+    } catch (error) {
+        console.error("Error fetching insurance policies:", error);
+        res.status(500).json({ error: "Error fetching insurance policies" });
+    }
+});
+
+// ----------------------------------------------------------
+// Medical Record
+// ----------------------------------------------------------
+
+router.post('/initiateNewMedicalRecord', requireAuth, requireAdmin, async (req, res) => {
+    try {
+        const success = await appService.initiateMedicalRecordTable();
+        res.json({ success });
+    } catch (error) {
+        console.error("Error initiating medical record table:", error);
+        res.status(500).json({ error: "Error initiating medical record table" });
+    }
+});
+
+router.post('/insert-new-medical-record', validate(schemas.insertMedicalRecordSchema), requireAuth, async (req, res) => {
+    try {
+        const { PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes } = req.body;
+        const success = await appService.insertNewMedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes);
+        res.json({ success });
+    } catch (error) {
+        console.error("Error inserting new medical record:", error);
+        res.status(500).json({ error: "Error inserting new medical record" });
+    }
+});
+
+router.get('/medical-records', async (req, res) => {
+    try {
+        const rows = await appService.fetchMedicalRecords();
+        res.json(rows);
+    } catch (error) {
+        console.error("Error fetching medical records:", error);
+        res.status(500).json({ error: "Error fetching medical records" });
+    }
+});
 
 module.exports = router;

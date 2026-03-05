@@ -5,7 +5,10 @@ node_modules/
 *.log
 
 # dotenv environment variable files
-#.env
+.env
+
+# Claude Code configuration
+.claude/
 
 # IDEs and editors
 .vscode/

@@ -1,857 +1,623 @@
-const oracledb = require('oracledb');
-const loadEnvFile = require('./utils/envUtil');
-
-const envVariables = loadEnvFile('./.env');
-
-// Database configuration setup. Ensure your .env file has the required database credentials.
-const dbConfig = {
-    user: envVariables.ORACLE_USER,
-    password: envVariables.ORACLE_PASS,
-    connectString: `${envVariables.ORACLE_HOST}:${envVariables.ORACLE_PORT}/${envVariables.ORACLE_DBNAME}`,
-    poolMin: 1,
-    poolMax: 3,
-    poolIncrement: 1,
-    poolTimeout: 60
-};
-
-// initialize connection pool
-async function initializeConnectionPool() {
-    try {
-        await oracledb.createPool(dbConfig);
-        console.log('Connection pool started');
-    } catch (err) {
-        console.error('Initialization error: ' + err.message);
-    }
-}
-
-async function closePoolAndExit() {
-    console.log('\nTerminating');
-    try {
-        await oracledb.getPool().close(10); // 10 seconds grace period for connections to finish
-        console.log('Pool closed');
-        process.exit(0);
-    } catch (err) {
-        console.error(err.message);
-        process.exit(1);
-    }
-}
-
-initializeConnectionPool();
-
-process
-    .once('SIGTERM', closePoolAndExit)
-    .once('SIGINT', closePoolAndExit);
-
+const mongoose = require('mongoose');
+const { Species, Pet, Client, Counter, Veterinarian, AdoptionCenter, Adoption, InsurancePolicy, MedicalRecord } = require('./models');
 
 // ----------------------------------------------------------
-// Wrapper to manage OracleDB actions, simplifying connection handling.
-async function withOracleDB(action) {
-    let connection;
+// Helpers
+// ----------------------------------------------------------
+
+function docsToArrays(docs, fields) {
+    return docs.map(doc => fields.map(f => doc[f] !== undefined ? doc[f] : null));
+}
+
+async function getNextSequence(name) {
+    const counter = await Counter.findOneAndUpdate(
+        { _id: name },
+        { $inc: { sequence: 1 } },
+        { new: true, upsert: true }
+    );
+    return counter.sequence;
+}
+
+function parseInsuranceDate(dateStr) {
+    if (!dateStr) return null;
+    const [year, month, day] = dateStr.split('/');
+    return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
+function formatInsuranceDate(date) {
+    if (!date) return null;
+    const d = new Date(date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}/${month}/${day}`;
+}
+
+function parseAdoptionDate(dateStr) {
+    if (!dateStr) return null;
+    let year, month, day;
+    if (dateStr.length === 8) {
+        year = dateStr.substring(0, 4);
+        month = dateStr.substring(4, 6);
+        day = dateStr.substring(6, 8);
+    } else {
+        [year, month, day] = dateStr.split('-');
+    }
+    return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
+function formatAdoptionDate(date) {
+    if (!date) return null;
+    const d = new Date(date);
+    return d.toISOString().split('T')[0];
+}
+
+// ----------------------------------------------------------
+// Connection test
+// ----------------------------------------------------------
+
+async function testConnection() {
+    return mongoose.connection.readyState === 1;
+}
+
+// ----------------------------------------------------------
+// Pet functions
+// ----------------------------------------------------------
+
+async function fetchPetTableFromDb(species, minAge, maxAge) {
     try {
-        connection = await oracledb.getConnection(); // Gets a connection from the default pool 
-        return await action(connection);
-    } catch (err) {
-        console.error(err);
-        throw err;
-    } finally {
-        if (connection) {
-            try {
-                await connection.close();
-            } catch (err) {
-                console.error(err);
-            }
+        const filter = {};
+        if (species) filter.speciesName = species;
+        if (minAge || maxAge) {
+            filter.age = {};
+            if (minAge) filter.age.$gte = Number(minAge);
+            if (maxAge) filter.age.$lte = Number(maxAge);
         }
-    }
-}
 
-
-// ----------------------------------------------------------
-// Core functions for database operations
-// Modify these functions, especially the SQL queries, based on your project's requirements and design.
-async function testOracleConnection() {
-    return await withOracleDB(async (connection) => {
-        return true;
-    }).catch(() => {
-        return false;
-    });
-}
-
-// ======================================================================
-// =========== Pet (PetMicrochipID, Name, Age, Breed, Gender) ===========
-// ======================================================================
-
-async function fetchPetTableFromDb() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM Pet');
-        return result.rows;
-    }).catch(() => {
+        const pets = await Pet.find(filter).lean();
+        return docsToArrays(pets, ['petMicrochipID', 'name', 'age', 'breed', 'gender', 'speciesName']);
+    } catch (error) {
+        console.error("Database error:", error);
         return [];
-    });
+    }
 }
 
 async function fetchPetMaxAges() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT SpeciesName, AVG(Age) FROM Pet GROUP BY(SpeciesName)');
-        return result.rows;
-    }).catch(() => {
+    try {
+        const result = await Pet.aggregate([
+            { $group: { _id: '$speciesName', avgAge: { $avg: '$age' } } },
+            { $project: { _id: 0, speciesName: '$_id', avgAge: 1 } }
+        ]);
+        return result.map(r => [r.speciesName, r.avgAge]);
+    } catch (error) {
+        console.error("Error fetching pet stats:", error);
         return [];
-    });
-}
-
-
-
-async function fetchPetTableFromDb(species, minAge, maxAge) {
-    return await withOracleDB(async (connection) => {
-        let query = 'SELECT * FROM Pet';
-        let conditions = [];
-        let params = {};
-
-        if (species) {
-            conditions.push('SpeciesName = :species');
-            params.species = species;
-        }
-
-        if (minAge) {
-            conditions.push('Age >= :minAge');
-            params.minAge = minAge;
-        }
-
-        if (maxAge) {
-            conditions.push('Age <= :maxAge');
-            params.maxAge = maxAge;
-        }
-
-        if (conditions.length > 0) {
-            query += ' WHERE ' + conditions.join(' AND ');
-        }
-
-        const result = await connection.execute(query, params);
-        return result.rows;
-    }).catch((error) => {
-        console.error("Database error:", error);
-        return [];
-    });
+    }
 }
 
 async function initiateNewPet() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE Pet CASCADE CONSTRAINTS`);
-        } catch (err) {
-            console.log('Table might not exist, proceeding to create...');
-        }
-
-        const result = await connection.execute(`
-            CREATE TABLE Pet (
-                PetMicrochipID NUMBER(15) PRIMARY KEY,
-                Name VARCHAR2(50),
-                Age NUMBER(3),
-                Breed VARCHAR2(50) NOT NULL,
-                Gender CHAR(1) NOT NULL,
-                SpeciesName VARCHAR2(50),
-                CONSTRAINT fk_species FOREIGN KEY (SpeciesName)
-                    REFERENCES Species(speciesName)
-                    ON DELETE CASCADE
-            )
-        `);
+    try {
+        await Pet.deleteMany({});
         return true;
-    }).catch(() => {
+    } catch (error) {
+        console.error("Error resetting Pet collection:", error);
         return false;
-    });
+    }
 }
 
 async function insertNewPet(MicrochipID, Name, Age, Breed, Gender, SpeciesName) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO Pet (PetMicrochipID, Name, Age, Breed, Gender, SpeciesName) VALUES 
-            (:MicrochipID, :Name, :Age, :Breed, :Gender, :SpeciesName)`,
-            [MicrochipID, Name, Age, Breed, Gender, SpeciesName],
-            { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+    try {
+        await Pet.create({
+            petMicrochipID: MicrochipID,
+            name: Name,
+            age: Age,
+            breed: Breed,
+            gender: Gender,
+            speciesName: SpeciesName
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting pet:", error);
         return false;
-    });
+    }
 }
 
 async function fetchSpeciesAgeStats() {
-    return withOracleDB(async (connection) => {
-        const result = await connection.execute(`
-        SELECT SpeciesName, AVG(Age)
-        FROM Pet
-        GROUP BY SpeciesName
-        HAVING AVG(Age) > (
-          SELECT MIN(AvgAge) 
-          FROM (
-            SELECT AVG(Age) AS AvgAge 
-            FROM Pet 
-            GROUP BY SpeciesName
-          )
-        )
-      `);
-        return result.rows;
-    });
+    try {
+        const allAvgs = await Pet.aggregate([
+            { $group: { _id: '$speciesName', avgAge: { $avg: '$age' } } }
+        ]);
+
+        if (allAvgs.length === 0) return [];
+
+        const minAvg = Math.min(...allAvgs.map(r => r.avgAge));
+
+        return allAvgs
+            .filter(r => r.avgAge > minAvg)
+            .map(r => [r._id, r.avgAge]);
+    } catch (error) {
+        console.error("Error fetching species age stats:", error);
+        return [];
+    }
 }
 
-// ======================================================================
-// =========== Client(ClientID:  INTEGER(10), FirstName: VARCHAR NOT NULL, 
-// LastName: VARCHAR, Address: VARCHAR NOT NULL, ContactNumber: INTEGER)
-// ======================================================================
+// ----------------------------------------------------------
+// Client functions
+// ----------------------------------------------------------
 
 async function fetchClientTableFromDb() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM Client');
-        return result.rows;
-    }).catch(() => {
+    try {
+        const clients = await Client.find({}).lean();
+        return docsToArrays(clients, ['clientID', 'firstName', 'lastName', 'clientAddress', 'clientContact']);
+    } catch (error) {
+        console.error("Error fetching clients:", error);
         return [];
-    });
+    }
 }
 
 async function initiateNewClient() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE Client`);
-        } catch (err) {
-            console.log('Table might not exist, proceeding to create...');
-        }
-
-        const result = await connection.execute(`
-            CREATE TABLE Client (
-                ClientID NUMBER(10) PRIMARY KEY,
-                FirstName VARCHAR2(100) NOT NULL,
-                LastName VARCHAR2(100),
-                ClientAddress VARCHAR2(100) NOT NULL,
-                ClientContact NUMBER(20)
-                )
-            
-        `);
+    try {
+        await Client.deleteMany({});
+        await Counter.deleteOne({ _id: 'clientID' });
         return true;
-    }).catch(() => {
+    } catch (error) {
+        console.error("Error resetting Client collection:", error);
         return false;
-    });
+    }
 }
 
 async function insertNewClient(FirstName, LastName, ClientAddress, ClientContact) {
-
-    return await withOracleDB(async (connection) => {
-
-        // generates a number for you, increments it as you add a new one
-        let id = await connection.execute(
-            `SELECT NVL(MAX(ClientID), 0) + 1 AS NextID FROM Client`
-        );
-        id = id.rows[0][0];
-
-        console.log(id);
-
-        const result = await connection.execute(
-            `INSERT INTO Client (ClientID, FirstName, LastName, ClientAddress, ClientContact) 
-            VALUES (:id, :FirstName, :LastName, :ClientAddress, :ClientContact)`,
-            [id, FirstName, LastName, ClientAddress, ClientContact],
-            { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0 ? id : false;
-    }).catch(() => {
+    try {
+        const id = await getNextSequence('clientID');
+        await Client.create({
+            clientID: id,
+            firstName: FirstName,
+            lastName: LastName,
+            clientAddress: ClientAddress,
+            clientContact: ClientContact
+        });
+        return id;
+    } catch (error) {
+        console.error("Error inserting client:", error);
         return false;
-    });
+    }
 }
 
 async function updateClient(clientId, FirstName, LastName, ClientAddress, ClientContact) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `UPDATE Client
-             SET FirstName = :FirstName,
-                 LastName = :LastName,
-                 ClientAddress = :ClientAddress,
-                 ClientContact = :ClientContact
-             WHERE ClientID = :clientId`,
-            [FirstName, LastName, ClientAddress, ClientContact, clientId],
-            { autoCommit: true }
+    try {
+        const result = await Client.updateOne(
+            { clientID: Number(clientId) },
+            { $set: { firstName: FirstName, lastName: LastName, clientAddress: ClientAddress, clientContact: ClientContact } }
         );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+        return result.modifiedCount > 0;
+    } catch (error) {
+        console.error("Error updating client:", error);
         return false;
-    });
+    }
 }
 
-// ===========================================================================================
-// VeterinarianSpecializesInSpecies(VetLicenseNumber: INTEGER(10), SpeciesName: VARCHAR)
-// Veterinarian(VetLicenseNumber: INTEGER(10), Name: VARCHAR NOT NULL, ClinicName: VARCHAR, 
-// ContactNumber: INTEGER, EmailAddress: VARCHAR)
-// ===========================================================================================
+// ----------------------------------------------------------
+// Veterinarian functions
+// ----------------------------------------------------------
+
+const VET_FIELD_MAP = {
+    'VetLicenseNumber': 'vetLicenseNumber',
+    'Name': 'name',
+    'ClinicName': 'clinicName',
+    'ContactNumber': 'contactNumber',
+    'EmailAddress': 'emailAddress'
+};
 
 async function insertNewVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO Veterinarian (VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress) VALUES 
-            (:VetLicenseNumber, :Name, :ClinicName, :ContactNumber, :EmailAddress)`,
-            [VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress],
-            { autoCommit: true }
-        );
-
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+    try {
+        await Veterinarian.create({
+            vetLicenseNumber: VetLicenseNumber,
+            name: Name,
+            clinicName: ClinicName,
+            contactNumber: ContactNumber,
+            emailAddress: EmailAddress
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting vet:", error);
         return false;
-    });
+    }
 }
 
 async function fetchVetTableFromDb() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM Veterinarian');
-        return result.rows;
-    }).catch(() => {
+    try {
+        const vets = await Veterinarian.find({}).lean();
+        return docsToArrays(vets, ['vetLicenseNumber', 'name', 'clinicName', 'contactNumber', 'emailAddress']);
+    } catch (error) {
+        console.error("Error fetching vets:", error);
         return [];
-    });
+    }
 }
 
 async function fetchVetProject(selectors) {
-    return await withOracleDB(async (connection) => {
-        const text = "SELECT " + selectors + " FROM Veterinarian"
-        const result = await connection.execute(text);
-        return result.rows;
-    }).catch(() => {
+    try {
+        const requestedFields = selectors.split(',').map(s => s.trim());
+        const validFields = requestedFields
+            .map(f => VET_FIELD_MAP[f])
+            .filter(f => f !== undefined);
+
+        if (validFields.length === 0) return [];
+
+        const projection = { _id: 0 };
+        validFields.forEach(f => { projection[f] = 1; });
+
+        const docs = await Veterinarian.find({}, projection).lean();
+        return docs.map(doc => validFields.map(f => doc[f] !== undefined ? doc[f] : null));
+    } catch (error) {
+        console.error("Error fetching vet projection:", error);
         return [];
-    });
+    }
 }
 
 async function initiateNewVet() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE Veterinarian`);
-        } catch (err) {
-            console.log('Table might not exist, proceeding to create...');
-        }
-
-        const result = await connection.execute(`
-            CREATE TABLE Veterinarian (
-                VetLicenseNumber NUMBER(10) PRIMARY KEY,
-                Name VARCHAR2(100) NOT NULL,
-                ClinicName VARCHAR2(100),
-                ContactNumber NUMBER(20),
-                EmailAddress VARCHAR2(100)
-                )
-            
-        `);
+    try {
+        await Veterinarian.deleteMany({});
         return true;
-    }).catch(() => {
+    } catch (error) {
+        console.error("Error resetting Veterinarian collection:", error);
         return false;
-    });
+    }
 }
 
 async function updateVet(VetLicenseNumber, Name, ClinicName, ContactNumber, EmailAddress) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `UPDATE Veterinarian
-             SET Name = :Name,
-                 ClinicName = :ClinicName,
-                 ContactNumber = :ContactNumber,
-                 EmailAddress = :EmailAddress
-             WHERE VetLicenseNumber = :VetLicenseNumber`,
-            [Name, ClinicName, ContactNumber, EmailAddress, VetLicenseNumber],
-            { autoCommit: true }
+    try {
+        const result = await Veterinarian.updateOne(
+            { vetLicenseNumber: Number(VetLicenseNumber) },
+            { $set: { name: Name, clinicName: ClinicName, contactNumber: ContactNumber, emailAddress: EmailAddress } }
         );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+        return result.modifiedCount > 0;
+    } catch (error) {
+        console.error("Error updating vet:", error);
         return false;
-    });
+    }
 }
 
-// ======================================================================
-// =========== AdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity)
-// ======================================================================
+// ----------------------------------------------------------
+// Adoption Center functions
+// ----------------------------------------------------------
+
 async function fetchAdoptionCenterTableFromDb() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute("SELECT * FROM AdoptionCenter");
-        return result.rows;
-    }).catch(() => {
+    try {
+        const centers = await AdoptionCenter.find({}).lean();
+        return docsToArrays(centers, ['centerLicenseNumber', 'centerName', 'address', 'animalCapacity']);
+    } catch (error) {
+        console.error("Error fetching adoption centers:", error);
         return [];
-    });
+    }
 }
 
 async function insertNewAdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO AdoptionCenter
-          (CenterLicenseNumber, CenterName, Address, AnimalCapacity)
-         VALUES (:CenterLicenseNumber, :CenterName, :Address, :AnimalCapacity)`,
-            [CenterLicenseNumber, CenterName, Address, AnimalCapacity],
-            { autoCommit: true }
-        );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+    try {
+        await AdoptionCenter.create({
+            centerLicenseNumber: CenterLicenseNumber,
+            centerName: CenterName,
+            address: Address,
+            animalCapacity: AnimalCapacity
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting adoption center:", error);
         return false;
-    });
+    }
 }
 
 async function initiateNewAdoptionCenter() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE AdoptionCenter`);
-        } catch (err) {
-            console.log('Table might not exist, proceeding to create...');
-        }
-        const result = await connection.execute(`
-              CREATE TABLE AdoptionCenter (
-                CenterLicenseNumber NUMBER(10) PRIMARY KEY,
-                CenterName VARCHAR2(100),
-                Address VARCHAR2(100),
-                AnimalCapacity NUMBER(10)
-              )`);
+    try {
+        await AdoptionCenter.deleteMany({});
         return true;
-    }).catch(() => {
+    } catch (error) {
+        console.error("Error resetting AdoptionCenter collection:", error);
         return false;
-    });
+    }
 }
 
 async function updateAdoptionCenter(CenterLicenseNumber, CenterName, Address, AnimalCapacity) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `UPDATE AdoptionCenter
-           SET CenterName = :CenterName,
-               Address = :Address,
-               AnimalCapacity = :AnimalCapacity
-         WHERE CenterLicenseNumber = :CenterLicenseNumber`,
-            [CenterName, Address, AnimalCapacity, CenterLicenseNumber],
-            { autoCommit: true }
+    try {
+        const result = await AdoptionCenter.updateOne(
+            { centerLicenseNumber: Number(CenterLicenseNumber) },
+            { $set: { centerName: CenterName, address: Address, animalCapacity: AnimalCapacity } }
         );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+        return result.modifiedCount > 0;
+    } catch (error) {
+        console.error("Error updating adoption center:", error);
         return false;
-    });
+    }
 }
 
-// ===========================================================================================
-// ======== Species(SpeciesName, HousingSpaceRequired, GroomingRoutine, DietType) ============
-// ===========================================================================================
+// ----------------------------------------------------------
+// Species functions
+// ----------------------------------------------------------
 
 async function initiateSpeciesTable() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE Species`);
-        } catch (error) {
-            console.log('Species table did not exist.')
-        }
-        const result = await connection.execute(`
-            CREATE TABLE Species (
-                speciesName VARCHAR2(50) PRIMARY KEY,
-                HousingSpaceRequired VARCHAR2(50), 
-                GroomingRoutine VARCHAR2(50),
-                DietType VARCHAR2 (50)
-            )
-        `);
+    try {
+        await Species.deleteMany({});
         return true;
-    }).catch((error) => {
-        console.error("Error creating Species table:", error);
+    } catch (error) {
+        console.error("Error resetting Species collection:", error);
         return false;
-    });
+    }
 }
 
 async function insertNewSpecies(speciesName, housingSpace, groomingRoutine, dietType) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO Species (speciesName, HousingSpaceRequired, GroomingRoutine, DietType)
-            VALUES (:speciesName, :housingSpace, :groomingRoutine, :dietType)`,
-            [speciesName, housingSpace, groomingRoutine, dietType],
-            { autoCommit: true }
-        );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch(() => {
+    try {
+        await Species.create({
+            speciesName,
+            housingSpaceRequired: housingSpace,
+            groomingRoutine,
+            dietType
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting species:", error);
         return false;
-    });
+    }
 }
 
 async function fetchSpeciesList() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `SELECT speciesName AS "SpeciesName",
-            HousingSpaceRequired AS "HousingSpaceRequired",
-            GroomingRoutine AS "GroomingRoutine",
-            DietType AS "DietType"
-            FROM Species`,
-            [],
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        return result.rows;
-    }).catch((error) => {
-        console.error("Error in fetchSpeciesList:", error);
+    try {
+        const species = await Species.find({}).lean();
+        return species.map(s => ({
+            SpeciesName: s.speciesName,
+            HousingSpaceRequired: s.housingSpaceRequired,
+            GroomingRoutine: s.groomingRoutine,
+            DietType: s.dietType
+        }));
+    } catch (error) {
+        console.error("Error fetching species list:", error);
         return [];
-    })
+    }
 }
 
 async function clearSpeciesTable() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DELETE TABLE Species`);
-            console.log("Species table cleared successfully.");
-        } catch (error) {
-            console.error("Error clearing Species table:", error);
-        }
-        initiateSpeciesTable();
-    }).catch((error) => {
-        console.error("Error in clearSpeciesTable:", error);
+    try {
+        await Species.deleteMany({});
+        return true;
+    } catch (error) {
+        console.error("Error clearing species:", error);
         return false;
-    });
+    }
 }
 
 async function updateSpecies(speciesName, housingSpace, groomingRoutine, dietType) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `UPDATE Species 
-         SET HousingSpaceRequired = :housingSpace,
-             GroomingRoutine = :groomingRoutine,
-             DietType = :dietType
-         WHERE speciesName = :speciesName`,
-            [housingSpace, groomingRoutine, dietType, speciesName],
-            { autoCommit: true }
+    try {
+        const result = await Species.updateOne(
+            { speciesName },
+            { $set: { housingSpaceRequired: housingSpace, groomingRoutine, dietType } }
         );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch((error) => {
+        return result.modifiedCount > 0;
+    } catch (error) {
         console.error("Error updating species:", error);
         return false;
-    });
+    }
 }
 
 async function deleteSpecies(speciesName) {
-    return await withOracleDB(async (connection) => {
-        await connection.execute(
-            `DELETE FROM Pet WHERE SpeciesName = :speciesName`,
-            [speciesName],
-            { autoCommit: true }
-        );
-        const result = await connection.execute(
-            `DELETE FROM Species WHERE speciesName = :speciesName`,
-            [speciesName],
-            { autoCommit: true }
-        );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch((error) => {
+    try {
+        await Pet.deleteMany({ speciesName });
+        const result = await Species.deleteOne({ speciesName });
+        return result.deletedCount > 0;
+    } catch (error) {
         console.error("Error deleting species:", error);
         return false;
-    });
+    }
 }
 
 async function getSpeciesWithMinPets(minCount) {
-    return await withOracleDB(async (connection) => {
-        const query = `
-        SELECT SpeciesName, COUNT(*) AS NumPets
-        FROM Pet
-        GROUP BY SpeciesName
-        HAVING COUNT(*) >= :minCount
-      `;
-        const result = await connection.execute(query, [minCount], {
-            outFormat: oracledb.OUT_FORMAT_OBJECT
-        });
-        return result.rows;
-    }).catch((error) => {
+    try {
+        const result = await Pet.aggregate([
+            { $group: { _id: '$speciesName', NumPets: { $sum: 1 } } },
+            { $match: { NumPets: { $gte: minCount } } },
+            { $project: { _id: 0, SPECIESNAME: '$_id', NUMPETS: '$NumPets' } }
+        ]);
+        return result;
+    } catch (error) {
         console.error("Error fetching species by pet count:", error);
         return [];
-    });
+    }
 }
 
-
-
-// ========================================================================================================
-// ============ Insurance Policies (InsurancePolicyNumber, PolicyHolderName, PolicyDetails) ===============
-// ========================================================================================================
+// ----------------------------------------------------------
+// Insurance Policy functions
+// ----------------------------------------------------------
 
 async function initiateInsurancePolicyTable() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE InsurancePolicy CASCADE CONSTRAINTS`);
-            console.log("InsurancePolicy table dropped successfully.");
-        } catch (error) {
-            if (error.errorNum === 942) {
-                console.log('InsurancePolicy table did not exist, proceeding to create...');
-            } else {
-                throw error;
-            }
-        }
-        await connection.execute(`
-        CREATE TABLE InsurancePolicy (
-            InsurancePolicyNumber NUMBER(20) PRIMARY KEY,
-            PolicyLevel VARCHAR2(50),
-            CoverageAmount NUMBER NOT NULL,
-            InsuranceStartDate VARCHAR2(10) CHECK (REGEXP_LIKE(InsuranceStartDate, '^[0-9]{4}/[0-9]{2}/[0-9]{2}$')),
-            InsuranceExpiration VARCHAR2(10) CHECK (REGEXP_LIKE(InsuranceExpiration, '^[0-9]{4}/[0-9]{2}/[0-9]{2}$'))
-        )
-      `);
-        console.log("InsurancePolicy table created successfully.");
+    try {
+        await InsurancePolicy.deleteMany({});
         return true;
-    }).catch((error) => {
-        console.error("Error creating InsurancePolicy table:", error);
+    } catch (error) {
+        console.error("Error resetting InsurancePolicy collection:", error);
         return false;
-    });
+    }
 }
-
 
 async function insertNewInsurancePolicy(InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO InsurancePolicy 
-             (InsurancePolicyNumber, PolicyLevel, CoverageAmount, InsuranceStartDate, InsuranceExpiration)
-             VALUES 
-             (:InsurancePolicyNumber, :PolicyLevel, :CoverageAmount, :InsuranceStartDate, :InsuranceExpiration)`,
-            [InsurancePolicyNumber, Level, CoverageAmount, InsuranceStartDate, InsuranceExpiration],
-            { autoCommit: true }
-        );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch((error) => {
-        console.error("Error inserting new insurance policy:", error);
+    try {
+        await InsurancePolicy.create({
+            insurancePolicyNumber: InsurancePolicyNumber,
+            policyLevel: Level,
+            coverageAmount: CoverageAmount,
+            insuranceStartDate: parseInsuranceDate(InsuranceStartDate),
+            insuranceExpiration: parseInsuranceDate(InsuranceExpiration)
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting insurance policy:", error);
         return false;
-    });
+    }
 }
-
 
 async function fetchInsurancePolicyList() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `SELECT 
-               InsurancePolicyNumber, 
-               PolicyLevel, 
-               CoverageAmount,
-               InsuranceStartDate,
-               InsuranceExpiration
-             FROM InsurancePolicy`,
-            [],
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        return result.rows;
-    }).catch((error) => {
+    try {
+        const policies = await InsurancePolicy.find({}).lean();
+        return policies.map(p => ({
+            InsurancePolicyNumber: p.insurancePolicyNumber,
+            PolicyLevel: p.policyLevel,
+            CoverageAmount: p.coverageAmount,
+            InsuranceStartDate: formatInsuranceDate(p.insuranceStartDate),
+            InsuranceExpiration: formatInsuranceDate(p.insuranceExpiration)
+        }));
+    } catch (error) {
         console.error("Error fetching insurance policies:", error);
         return [];
-    });
+    }
 }
 
-
-// ======================================================================================================================================
-// ============ MedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) ============
-// ======================================================================================================================================
+// ----------------------------------------------------------
+// Medical Record functions
+// ----------------------------------------------------------
 
 async function initiateMedicalRecordTable() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE MedicalRecord`);
-        } catch (error) {
-            console.log('MedicalRecord table did not exist, proceeding to create...');
-        }
-        const result = await connection.execute(`
-            CREATE TABLE MedicalRecord (
-                PetMicrochipID NUMBER(15),
-                InsurancePolicyNumber NUMBER(20),
-                RecordID NUMBER(10),
-                VaccinationStatus CHAR(1),
-                HealthCondition VARCHAR2(200),
-                VetNotes VARCHAR2(500),
-                CONSTRAINT pk_medicalRecord PRIMARY KEY (PetMicrochipID, RecordID),
-                CONSTRAINT fk_medicalRecordPet FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
-                CONSTRAINT fk_medicalRecordInsurance FOREIGN KEY (InsurancePolicyNumber) REFERENCES InsurancePolicy(InsurancePolicyNumber)
-            )
-        `);
+    try {
+        await MedicalRecord.deleteMany({});
         return true;
-    }).catch((error) => {
-        console.error("Error creating MedicalRecord table:", error);
+    } catch (error) {
+        console.error("Error resetting MedicalRecord collection:", error);
         return false;
-    });
-}
-
-
-async function fetchAdoptionTableFromDb() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute('SELECT * FROM Adoption');
-        return result.rows;
-    }).catch(() => {
-        return [];
-    });
+    }
 }
 
 async function insertNewMedicalRecord(PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes) {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `INSERT INTO MedicalRecord
-            (PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes)
-            VALUES (:PetMicrochipID, :RecordID, :InsurancePolicyNumber, :VaccinationStatus, :HealthCondition, :VetNotes)`,
-            [PetMicrochipID, RecordID, InsurancePolicyNumber, VaccinationStatus, HealthCondition, VetNotes],
-            { autoCommit: true }
-        );
-        return result.rowsAffected && result.rowsAffected > 0;
-    }).catch((error) => {
-        console.error("Error inserting new medical record:", error);
+    try {
+        await MedicalRecord.create({
+            petMicrochipID: PetMicrochipID,
+            recordID: RecordID,
+            insurancePolicyNumber: InsurancePolicyNumber,
+            vaccinationStatus: VaccinationStatus,
+            healthCondition: HealthCondition,
+            vetNotes: VetNotes
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting medical record:", error);
         return false;
-    });
+    }
 }
 
 async function fetchMedicalRecords() {
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `SELECT PetMicrochipID,
-            RecordID,
-            InsurancePolicyNumber,
-            VaccinationStatus,
-            HealthCondition,
-            VetNotes
-            FROM MedicalRecord`,
-            [],
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        return result.rows;
-    }).catch((error) => {
+    try {
+        const records = await MedicalRecord.find({}).lean();
+        return records.map(r => ({
+            PETMICROCHIPID: r.petMicrochipID,
+            RECORDID: r.recordID,
+            INSURANCEPOLICYNUMBER: r.insurancePolicyNumber,
+            VACCINATIONSTATUS: r.vaccinationStatus,
+            HEALTHCONDITION: r.healthCondition,
+            VETNOTES: r.vetNotes
+        }));
+    } catch (error) {
         console.error("Error fetching medical records:", error);
         return [];
-    })
+    }
 }
 
-// fetPetMedical
 async function fetchPetMedical(PetMicrochipID) {
-
-
     if (!PetMicrochipID || isNaN(PetMicrochipID)) {
         console.error("Invalid PetMicrochipID: must be a valid number");
-        console.log(PetMicrochipID);
-        return []; // Return an empty array to prevent database errors
+        return [];
     }
 
-    const numericPetMicrochipID = Number(PetMicrochipID);
-
-    return await withOracleDB(async (connection) => {
-        const result = await connection.execute(
-            `SELECT PetMicrochipID,
-            RecordID,
-            InsurancePolicyNumber,
-            VaccinationStatus,
-            HealthCondition,
-            VetNotes
-            FROM MedicalRecord
-            WHERE PetMicrochipID = :PetMicrochipID`,
-            { PetMicrochipID: numericPetMicrochipID },
-            { outFormat: oracledb.OUT_FORMAT_OBJECT }
-        );
-        return result.rows;
-    }).catch((error) => {
+    try {
+        const records = await MedicalRecord.find({ petMicrochipID: Number(PetMicrochipID) }).lean();
+        return records.map(r => ({
+            PETMICROCHIPID: r.petMicrochipID,
+            RECORDID: r.recordID,
+            INSURANCEPOLICYNUMBER: r.insurancePolicyNumber,
+            VACCINATIONSTATUS: r.vaccinationStatus,
+            HEALTHCONDITION: r.healthCondition,
+            VETNOTES: r.vetNotes
+        }));
+    } catch (error) {
         console.error("Error fetching medical records of pet:", error);
         return [];
-    })
+    }
 }
 
-// Adoption
+// ----------------------------------------------------------
+// Adoption functions
+// ----------------------------------------------------------
+
+async function fetchAdoptionTableFromDb() {
+    try {
+        const adoptions = await Adoption.find({}).lean();
+        return adoptions.map(a => [
+            a.petMicrochipID,
+            formatAdoptionDate(a.adoptionDate),
+            a.clientID,
+            a.centerLicenseNumber
+        ]);
+    } catch (error) {
+        console.error("Error fetching adoptions:", error);
+        return [];
+    }
+}
 
 async function initiateNewAdoption() {
-    return await withOracleDB(async (connection) => {
-        try {
-            await connection.execute(`DROP TABLE Adoption`);
-        } catch (err) {
-            console.log('Table might not exist, proceeding to create...');
-        }
-
-        const result = await connection.execute(`
-            CREATE TABLE Adoption (
-                PetMicrochipID NUMBER(15),
-                AdoptionDate DATE,
-                ClientID NUMBER(10),
-                CenterLicenseNumber NUMBER(10),
-                PRIMARY KEY (PetMicrochipID),
-                FOREIGN KEY (PetMicrochipID) REFERENCES Pet(PetMicrochipID),
-                FOREIGN KEY (ClientID) REFERENCES Client(ClientID),
-                FOREIGN KEY (CenterLicenseNumber) REFERENCES AdoptionCenter(CenterLicenseNumber)
-            )
-        `);
-
+    try {
+        await Adoption.deleteMany({});
         return true;
-    }).catch((err) => {
-        console.error("Error creating Adoption table:", err);
+    } catch (error) {
+        console.error("Error resetting Adoption collection:", error);
         return false;
-    });
+    }
 }
 
 async function insertNewAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) {
-    return await withOracleDB(async (connection) => {
-        // Format date properly for Oracle
-        let formattedDate;
-
-        try {
-            // Handle date in YYYYMMDD format
-            if (AdoptionDate.length === 8) {
-                const year = AdoptionDate.substring(0, 4);
-                const month = AdoptionDate.substring(4, 6);
-                const day = AdoptionDate.substring(6, 8);
-                formattedDate = `${year}-${month}-${day}`;
-            } else {
-                // Assume it's already in proper format
-                formattedDate = AdoptionDate;
-            }
-
-            const result = await connection.execute(
-                `INSERT INTO Adoption (PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) 
-                 VALUES (:PetMicrochipID, TO_DATE(:AdoptionDate, 'YYYY-MM-DD'), :ClientID, :CenterLicenseNumber)`,
-                [PetMicrochipID, formattedDate, ClientID, CenterLicenseNumber],
-                { autoCommit: true }
-            );
-
-            return result.rowsAffected && result.rowsAffected > 0;
-        } catch (error) {
-            console.error("Error inserting adoption:", error);
-            return false;
-        }
-    }).catch(() => {
+    try {
+        await Adoption.create({
+            petMicrochipID: PetMicrochipID,
+            adoptionDate: parseAdoptionDate(AdoptionDate),
+            clientID: ClientID,
+            centerLicenseNumber: CenterLicenseNumber
+        });
+        return true;
+    } catch (error) {
+        console.error("Error inserting adoption:", error);
         return false;
-    });
+    }
 }
 
 async function updateAdoption(PetMicrochipID, AdoptionDate, ClientID, CenterLicenseNumber) {
-    return await withOracleDB(async (connection) => {
-        // Format date properly for Oracle
-        let formattedDate;
-
-        try {
-            // Handle date in YYYYMMDD format
-            if (AdoptionDate.length === 8) {
-                const year = AdoptionDate.substring(0, 4);
-                const month = AdoptionDate.substring(4, 6);
-                const day = AdoptionDate.substring(6, 8);
-                formattedDate = `${year}-${month}-${day}`;
-            } else {
-                // Assume it's already in proper format
-                formattedDate = AdoptionDate;
-            }
-
-            const result = await connection.execute(
-                `UPDATE Adoption 
-                 SET AdoptionDate = TO_DATE(:AdoptionDate, 'YYYY-MM-DD'), 
-                     ClientID = :ClientID, 
-                     CenterLicenseNumber = :CenterLicenseNumber
-                 WHERE PetMicrochipID = :PetMicrochipID`,
-                [formattedDate, ClientID, CenterLicenseNumber, PetMicrochipID],
-                { autoCommit: true }
-            );
-
-            return result.rowsAffected && result.rowsAffected > 0;
-        } catch (error) {
-            console.error("Error updating adoption:", error);
-            return false;
-        }
-    }).catch(() => {
+    try {
+        const result = await Adoption.updateOne(
+            { petMicrochipID: Number(PetMicrochipID) },
+            { $set: {
+                adoptionDate: parseAdoptionDate(AdoptionDate),
+                clientID: ClientID,
+                centerLicenseNumber: CenterLicenseNumber
+            }}
+        );
+        return result.modifiedCount > 0;
+    } catch (error) {
+        console.error("Error updating adoption:", error);
         return false;
-    });
+    }
 }
 
+// ----------------------------------------------------------
+// Exports
+// ----------------------------------------------------------
+
 module.exports = {
-    testOracleConnection,
-    // initiateDemotable, 
-    // insertDemotable, 
-    // updateNameDemotable, 
-    // countDemotable,
+    testConnection,
     insertNewPet,
     fetchPetTableFromDb,
     initiateNewPet,
+    fetchPetMaxAges,
+    fetchSpeciesAgeStats,
     insertNewClient,
     initiateNewClient,
-    fetchSpeciesAgeStats,
     updateClient,
     fetchClientTableFromDb,
     insertNewVet,
     fetchVetTableFromDb,
     initiateNewVet,
     updateVet,
+    fetchVetProject,
     fetchAdoptionCenterTableFromDb,
     insertNewAdoptionCenter,
     updateAdoptionCenter,
@@ -862,19 +628,16 @@ module.exports = {
     clearSpeciesTable,
     updateSpecies,
     deleteSpecies,
+    getSpeciesWithMinPets,
     initiateMedicalRecordTable,
     insertNewMedicalRecord,
     fetchMedicalRecords,
+    fetchPetMedical,
     initiateInsurancePolicyTable,
     insertNewInsurancePolicy,
     fetchInsurancePolicyList,
     fetchAdoptionTableFromDb,
     insertNewAdoption,
     updateAdoption,
-    initiateNewAdoption,
-    fetchPetMedical,
-    fetchVetProject,
-    fetchPetMaxAges,
-    getSpeciesWithMinPets
-
+    initiateNewAdoption
 };
