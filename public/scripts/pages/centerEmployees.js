@@ -16,20 +16,23 @@ function addEmployee(event) {
     const tableBody = document.getElementById('employeeTableBody');
     const row = document.createElement('tr');
 
-    row.innerHTML = `
-    <td>${firstName}</td>
-    <td>${lastName}</td>
-    <td>${role}</td>
-    <td>${salary}</td>
-    <td><button class="delete-employee-btn">Delete</button></td>
-    `;
+    const cellFirst = row.insertCell(0);
+    cellFirst.textContent = firstName;
+    const cellLast = row.insertCell(1);
+    cellLast.textContent = lastName;
+    const cellRole = row.insertCell(2);
+    cellRole.textContent = role;
+    const cellSalary = row.insertCell(3);
+    cellSalary.textContent = salary;
 
-    // Attach delete handler via addEventListener instead of inline onclick
-    // so that the module scope is respected.
-    const deleteBtn = row.querySelector('.delete-employee-btn');
+    const cellActions = row.insertCell(4);
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'Delete';
+    deleteBtn.className = 'btn btn-outline btn-sm';
     deleteBtn.addEventListener('click', function () {
         this.closest('tr').remove();
     });
+    cellActions.appendChild(deleteBtn);
 
     tableBody.appendChild(row);
     document.getElementById('employeeForm').reset();
