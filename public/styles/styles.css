@@ -32,10 +32,10 @@
     /* Borders & shadows */
     --border: #DDD4C8;
     --shadow: rgba(44, 24, 16, 0.08);
-    --shadow-card: 0 2px 6px rgba(44, 24, 16, 0.04), 0 8px 24px rgba(44, 24, 16, 0.05);
+    --shadow-card: 0 1px 2px rgba(44, 24, 16, 0.02), 0 1px 5px rgba(44, 24, 16, 0.03);
 
     /* Radii */
-    --radius-card: 12px;
+    --radius-card: 20px;
     --radius-input: 8px;
     --radius-pill: 24px;
 
@@ -306,8 +306,8 @@ small {
 }
 
 .card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 8px rgba(44, 24, 16, 0.08), 0 16px 40px rgba(44, 24, 16, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(44, 24, 16, 0.04), 0 4px 12px rgba(44, 24, 16, 0.06);
 }
 
 .card-grid {
@@ -347,8 +347,8 @@ small {
 }
 
 .pet-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 4px 8px rgba(44, 24, 16, 0.08), 0 16px 40px rgba(44, 24, 16, 0.12);
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(44, 24, 16, 0.04), 0 4px 12px rgba(44, 24, 16, 0.06);
 }
 
 .pet-card-header {
@@ -400,7 +400,7 @@ small {
     gap: 20px;
 }
 
-.form-row > * {
+.form-row>* {
     flex: 1;
     min-width: 0;
 }
@@ -861,11 +861,12 @@ textarea {
     display: flex;
     gap: 20px;
     overflow-x: auto;
-    padding-bottom: 16px;
+    padding: 8px 8px 16px;
+    margin: -8px -8px 0;
     scroll-snap-type: x mandatory;
 }
 
-.scroll-row > * {
+.scroll-row>* {
     scroll-snap-align: start;
     flex-shrink: 0;
     width: 220px;
@@ -892,6 +893,7 @@ textarea {
         opacity: 0;
         transform: translateY(10px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -903,6 +905,7 @@ textarea {
         opacity: 0;
         transform: translateY(20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -1406,7 +1409,7 @@ textarea {
         flex-direction: column;
     }
 
-    .scroll-row > * {
+    .scroll-row>* {
         width: 180px;
     }
 
