@@ -925,14 +925,19 @@ textarea {
     display: inline-block;
 }
 
+.button-container .btn {
+    position: relative;
+    z-index: 2;
+}
+
 .button-container:hover .dog {
-    transform: translate(20px, -55px) rotate(15deg);
+    transform: translate(10px, -30px) rotate(15deg);
     transition-delay: 0.6s;
 }
 
 .button-container:hover .paw {
     transition-delay: 0.3s;
-    right: -5px;
+    right: -3px;
 }
 
 .button-container:hover .paw::after {
@@ -942,8 +947,8 @@ textarea {
 
 .button-container:hover .paw.top {
     transition-delay: 0.4s;
-    right: 40px;
-    top: -8px;
+    right: 20px;
+    top: -4px;
 }
 
 .button-container:hover .tail {
@@ -953,10 +958,11 @@ textarea {
 
 .dog {
     position: absolute;
-    width: 65px;
-    height: 65px;
-    top: -10px;
+    width: 35px;
+    height: 35px;
+    top: -4px;
     right: 1px;
+    z-index: 1;
     transform: translate(0, 0) rotate(0);
     transition: 0.3s transform cubic-bezier(0.33, 1, 0.68, 1);
 }
@@ -1225,11 +1231,12 @@ textarea {
 
 .paw {
     position: absolute;
-    right: -20px;
-    top: 15px;
+    right: -10px;
+    top: 10px;
     overflow: hidden;
-    width: 20px;
-    height: 20px;
+    width: 12px;
+    height: 12px;
+    z-index: 1;
     transition: 0.3s right cubic-bezier(0.33, 1, 0.68, 1);
 }
 
@@ -1248,8 +1255,8 @@ textarea {
 
 .paw.top {
     transform: rotate(-90deg);
-    top: -20px;
-    right: 40px;
+    top: -10px;
+    right: 20px;
     transition: 0.3s top cubic-bezier(0.33, 1, 0.68, 1);
 }
 
