@@ -10,6 +10,9 @@ node_modules/
 # Claude Code configuration
 .claude/
 
+# Design docs & plans
+docs/
+
 # IDEs and editors
 .vscode/
 .idea/
@@ -22,3 +25,12 @@ Thumbs.db
 
 # Windows shortcuts
 *.lnk
+
+# Testing
+e2e/
+test-results/
+
+# Vercel
+.vercel/
+
+.env
