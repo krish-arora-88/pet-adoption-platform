@@ -32,7 +32,7 @@
     /* Borders & shadows */
     --border: #DDD4C8;
     --shadow: rgba(44, 24, 16, 0.08);
-    --shadow-card: 0 1px 3px rgba(44, 24, 16, 0.06), 0 8px 24px rgba(44, 24, 16, 0.08);
+    --shadow-card: 0 2px 6px rgba(44, 24, 16, 0.04), 0 8px 24px rgba(44, 24, 16, 0.05);
 
     /* Radii */
     --radius-card: 12px;
